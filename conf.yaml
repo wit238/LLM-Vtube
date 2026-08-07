@@ -78,7 +78,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm', and more
-        llm_provider: 'lmstudio_llm'
+        llm_provider: 'ollama_llm'
         # let ai speak as soon as the first comma is received on the first sentence
         # to reduced latency.
         faster_first_response: True
@@ -147,8 +147,8 @@ character_config:
         verbose: False
 
       ollama_llm:
-        base_url: 'http://localhost:11434/v1'
-        model: 'qwen2.5:latest'
+        base_url: '${OLLAMA_BASE_URL:http://ollama.railway.internal:11434/v1}'
+        model: '${OLLAMA_MODEL:qwen2.5:1.5b}'
         temperature: 0.6 # value between 0 to 2
         # seconds to keep the model in memory after inactivity. 
         # set to -1 to keep the model in memory forever (even after exiting open llm vtuber)
