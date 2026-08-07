@@ -18,6 +18,7 @@ class CharacterConfig(I18nMixin):
     live2d_model_name: str = Field(..., alias="live2d_model_name")
     character_name: str = Field(default="", alias="character_name")
     human_name: str = Field(default="Human", alias="human_name")
+    faq_threshold_percent: float = Field(default=60.0, alias="faq_threshold_percent")
     avatar: str = Field(default="", alias="avatar")
     persona_prompt: str = Field(..., alias="persona_prompt")
     agent_config: AgentConfig = Field(..., alias="agent_config")

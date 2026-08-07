@@ -33,6 +33,7 @@ character_config:
   character_name: 'มาลี' # Will be used in the group conversation and the display name of the AI.
   avatar: 'mao.png' # Suggest using a square image for the avatar. Save it in the avatars folder. Leave blank to use the first letter of the character name as the avatar.
   human_name: 'คุณ' # Will be used in the group conversation and the display name of the human.
+  faq_threshold_percent: 60.0 # เปอร์เซ็นต์ความคล้ายของคำ (0-100%) เพื่อดึงสคริปต์และไฟล์เสียง FAQ มาตอบทันที (default: 60.0)
 
   # ============== Prompts ==============
 

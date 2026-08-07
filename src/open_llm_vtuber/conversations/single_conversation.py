@@ -89,7 +89,8 @@ async def process_single_conversation(
             logger.info(f"With {len(images)} images")
 
         # Check if user input matches any FAQ question for instant, pre-rendered answer & clear voice
-        faq_match = match_faq(input_text)
+        faq_threshold = getattr(context.character_config, "faq_threshold_percent", 60.0)
+        faq_match = match_faq(input_text, similarity_threshold_percent=faq_threshold)
         if faq_match and not metadata:
             logger.info(f"🎯 FAQ Match found: {faq_match['id']}")
             answer_text = faq_match["answer"]

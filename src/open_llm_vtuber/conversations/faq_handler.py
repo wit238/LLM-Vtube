@@ -1,6 +1,8 @@
 import os
+import difflib
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
+from loguru import logger
 
 BASE_DIR = Path(__file__).parent.parent.parent.parent
 AUDIO_DIR = BASE_DIR / "assets" / "faq_audio"
@@ -138,14 +140,56 @@ FAQ_LIST = [
     }
 ]
 
-def match_faq(user_input: str) -> Optional[Dict[str, str]]:
-    """Check if user input matches any FAQ keywords"""
+def calc_similarity(kw: str, text: str) -> float:
+    """Calculate similarity percentage (0.0 to 100.0) between keyword and user input text."""
+    kw_clean = kw.lower().strip()
+    text_clean = text.lower().strip()
+
+    if not kw_clean or not text_clean:
+        return 0.0
+
+    # Direct substring match guarantees 100% score
+    if kw_clean in text_clean:
+        return 100.0
+
+    # Full string ratio
+    ratio = difflib.SequenceMatcher(None, kw_clean, text_clean).ratio()
+
+    # Substring sliding window ratio if text is longer than keyword
+    len_kw = len(kw_clean)
+    len_text = len(text_clean)
+    if len_kw < len_text and len_kw > 0:
+        for i in range(len_text - len_kw + 1):
+            sub = text_clean[i : i + len_kw]
+            sub_ratio = difflib.SequenceMatcher(None, kw_clean, sub).ratio()
+            if sub_ratio > ratio:
+                ratio = sub_ratio
+
+    return ratio * 100.0
+
+
+def match_faq(
+    user_input: str, similarity_threshold_percent: float = 60.0
+) -> Optional[Dict[str, Any]]:
+    """Check if user input matches any FAQ keywords based on exact substring or similarity % threshold."""
     if not user_input or not isinstance(user_input, str):
         return None
-    
+
     clean_text = user_input.lower().strip()
+    best_match = None
+    highest_score = 0.0
+
     for faq in FAQ_LIST:
-        for kw in faq["keywords"]:
-            if kw.lower() in clean_text:
-                return faq
+        for kw in faq.get("keywords", []):
+            score = calc_similarity(kw, clean_text)
+            if score > highest_score:
+                highest_score = score
+                best_match = faq
+
+    if best_match and highest_score >= similarity_threshold_percent:
+        logger.info(
+            f"🎯 FAQ Match found: {best_match['id']} (Score: {highest_score:.1f}% >= Threshold {similarity_threshold_percent:.1f}%)"
+        )
+        return best_match
+
     return None
