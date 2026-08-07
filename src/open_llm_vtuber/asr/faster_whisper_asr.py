@@ -11,13 +11,13 @@ class VoiceRecognition(ASRInterface):
         self,
         model_path: str = "distil-medium.en",
         download_root: str = None,
-        language: str = "en",
+        language: str = "th",
         device: str = "auto",
         compute_type: str = "int8",
         prompt: str = None,
     ) -> None:
         self.MODEL_PATH = model_path
-        self.LANG = language
+        self.LANG = language if language else "th"
         self.prompt = prompt
         self.model = WhisperModel(
             model_size_or_path=model_path,
