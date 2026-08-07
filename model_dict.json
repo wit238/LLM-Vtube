@@ -3,9 +3,9 @@
         "name": "mao_pro",
         "description": "",
         "url": "/live2d-models/mao_pro/runtime/mao_pro.model3.json",
-        "kScale": 0.5,
+        "kScale": 0.85,
         "initialXshift": 0.55,
-        "initialYshift": -0.05,
+        "initialYshift": -0.15,
         "kXOffset": 1150,
         "idleMotionGroupName": "Idle",
         "emotionMap": {
