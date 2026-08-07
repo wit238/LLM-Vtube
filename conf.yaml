@@ -198,7 +198,7 @@ character_config:
 
     typhoon_asr:
       model_name: 'scb10x/typhoon-asr-realtime'
-      device: 'cpu'
+      device: 'cuda'
 
     azure_asr:
       api_key: 'azure_api_key'
@@ -210,7 +210,7 @@ character_config:
       model_path: 'models/whisper/models--Systran--faster-whisper-small/snapshots/536b0662742c02347bc0e980a01041f333bce120'
       download_root: 'models/whisper'
       language: 'th' # Thai language for mic speech recognition!
-      device: 'cpu' # cpu, cuda, or auto. faster-whisper doesn't support mps
+      device: 'cuda' # cpu, cuda, or auto. faster-whisper doesn't support mps
       compute_type: 'int8'
       prompt: 'มหาวิทยาลัยราชภัฏนครปฐม หลักสูตร เทคโนโลยีสารสนเทศ วิทยาศาสตรบัณฑิต วท.บ. คณะวิทยาศาสตร์และเทคโนโลยี ชื่อหลักสูตร เรียนกี่ปี ปริญญาตรี' # Context prompt for Thai speech recognition
 
