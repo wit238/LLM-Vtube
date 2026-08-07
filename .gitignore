@@ -1,78 +1,85 @@
-# ignore the user configuration file
-conf.yaml
+# ==========================================
+# Open-LLM-VTuber Security & Ignore Rules
+# ==========================================
 
-# ignore non-default background images
-/backgrounds/*
-!/backgrounds/README.md
-
-# ignore non-default live2d models
-/live2d-models/*
-!/live2d-models/mao_pro
-!/live2d-models/shizuku
-
-# ignore non-default character configs
-/characters/*
-!/characters/README.md
-# but all of the defaults are already tracked, so no need to un-ignore them
-
-# ignore avatars
-avatars/*
-
-# macOS system files
-.DS_Store
-
-# Python files
-__pycache__/
-*.pyc
-lab.py
-.idea
-
-# Virtual environment
-.venv
-.conda
-conda
-
-# Sensitive data
+# Secrets, Environment Variables & API Keys
 .env
+.env.*
+*.env
+*.key
+*.pem
+*.crt
+*.pfx
 api_keys.py
+user_credentials.json
 src/open_llm_vtuber/llm/user_credentials.json
+mcp_servers.json
 
-# Database files
+# User Configurations & Backups
+conf.yaml.backup*
+conf*.backup
+*.bak
+*.swp
+
+# Executables & Tunnels
+*.exe
+cloudflared.exe
+ngrok.exe
+
+# Logs, Databases & Temporary Files
+*.log
+logs/*
+server.log
 memory.db
 memory.db.bk
+mem.json
+chat_history/
+tmp/
+temp/
+scratch/
+private/
 
-# Logs
-server.log
-logs/*
-
-# Cache and models
+# Audio & Media Caches
 cache/*
+assets/faq_audio/*.bak
+!cache/README.md
+
+# Models, Weights & Downloads
+models/*
+!models/README.md
+!models/piper_voice
+models/piper_voice/*
 src/open_llm_vtuber/tts/asset
 src/open_llm_vtuber/tts/config
 src/open_llm_vtuber/asr/models*
 !src/open_llm_vtuber/asr/models/silero_vad.onnx
-asset
-models/*
-!models/piper_voice
-models/piper_voice/*
 
+# Custom Character Assets & Backgrounds
+/backgrounds/*
+!/backgrounds/README.md
+/live2d-models/*
+!/live2d-models/mao_pro
+!/live2d-models/shizuku
+/characters/*
+!/characters/README.md
+avatars/*
 
-# Legacy and specific directories
-legacy/
-chat_history/
-knowledge_base/
-submodules/MeloTTS
-openapi_assistants.json
-openapi_memgpt.json
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.conda/
+conda/
+.pytest_cache/
 
-# memory log
-mem.json
-conf.yaml.backup
-
-*.exe
-
-tmp/
-private/
-mcp_servers.json
-
+# IDE & Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
 .vscode/
+.idea/
+*.suo
+*.user
