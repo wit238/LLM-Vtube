@@ -59,7 +59,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm' 之类的
-        llm_provider: 'ollama_llm' # 使用的 LLM 提供商
+        llm_provider: 'gemini_llm' # 使用的 LLM 提供商
         # 是否在第一句回应时遇上逗号就直接生成音频以减少首句延迟（默认：True）
         faster_first_response: True
         # 句子分割方法：'regex' 或 'pysbd'
@@ -145,8 +145,8 @@ character_config:
         temperature: 1.0 # 温度，介于 0 到 2 之间
 
       gemini_llm:
-        llm_api_key: 'Your Gemini API Key' # Gemini API 密钥
-        model: 'gemini-2.0-flash-exp' # 使用的模型
+        llm_api_key: '${GEMINI_API_KEY}'
+        model: 'gemini-2.0-flash' # 使用的模型
         temperature: 1.0 # 温度，介于 0 到 2 之间
 
       zhipu_llm:
