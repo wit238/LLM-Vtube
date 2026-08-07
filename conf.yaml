@@ -147,8 +147,8 @@ character_config:
         verbose: False
 
       ollama_llm:
-        base_url: '${OLLAMA_BASE_URL:http://ollama.railway.internal:11434/v1}'
-        model: '${OLLAMA_MODEL:qwen2.5:1.5b}'
+        base_url: 'http://localhost:11434/v1'
+        model: 'Kanoon/typhoon-7b.q8:latest'
         temperature: 0.6 # value between 0 to 2
         # seconds to keep the model in memory after inactivity. 
         # set to -1 to keep the model in memory forever (even after exiting open llm vtuber)
@@ -156,7 +156,7 @@ character_config:
         unload_at_exit: True # unload the model from memory at exit
 
       lmstudio_llm:
-        base_url: 'https://sticky-text-word-budapest.trycloudflare.com/v1'
+        base_url: 'http://localhost:1234/v1'
         model: 'typhoon-7b'
         temperature: 0.6 # value between 0 to 2
 
@@ -193,7 +193,7 @@ character_config:
   # === Automatic Speech Recognition ===
   asr_config:
     # speech to text model options: 'faster_whisper', 'whisper_cpp', 'whisper', 'azure_asr', 'fun_asr', 'groq_whisper_asr', 'sherpa_onnx_asr'
-    asr_model: 'sherpa_onnx_asr'
+    asr_model: 'faster_whisper'
 
     azure_asr:
       api_key: 'azure_api_key'
