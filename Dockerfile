@@ -29,9 +29,6 @@ RUN uv pip install --no-deps .
 # Ensure startup script is executable
 RUN chmod +x /app/scripts/start-app.sh
 
-# Volumes
-VOLUME ["/app/conf", "/app/models"]
-
 EXPOSE 12393
 
 CMD ["/app/scripts/start-app.sh"]
