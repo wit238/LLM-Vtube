@@ -39,11 +39,20 @@ class VoiceRecognition(ASRInterface):
             wavfile.write(tmp_path, self.SAMPLE_RATE, audio_int16)
             result = self.transcribe_fn(tmp_path, model_name=self.model_name, device=self.device)
             
-            if isinstance(result, dict) and "text" in result:
-                return result["text"].strip()
-            elif isinstance(result, str):
-                return result.strip()
-            return str(result).strip()
+            def extract_text(res):
+                if res is None:
+                    return ""
+                if isinstance(res, str):
+                    return res.strip()
+                if hasattr(res, "text"):
+                    return str(getattr(res, "text")).strip()
+                if isinstance(res, dict) and "text" in res:
+                    return str(res["text"]).strip()
+                if isinstance(res, (list, tuple)) and len(res) > 0:
+                    return extract_text(res[0])
+                return str(res).strip()
+
+            return extract_text(result)
         except Exception as e:
             logger.error(f"Error during Typhoon ASR transcription: {e}")
             return ""
