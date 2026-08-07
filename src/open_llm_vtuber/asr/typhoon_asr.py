@@ -37,7 +37,7 @@ class VoiceRecognition(ASRInterface):
 
         try:
             wavfile.write(tmp_path, self.SAMPLE_RATE, audio_int16)
-            result = self.transcribe_fn(tmp_path, model=self.model_name, device=self.device)
+            result = self.transcribe_fn(tmp_path, model_name=self.model_name, device=self.device)
             
             if isinstance(result, dict) and "text" in result:
                 return result["text"].strip()
