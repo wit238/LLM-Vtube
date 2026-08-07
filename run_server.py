@@ -165,11 +165,12 @@ def run(console_log_level: str):
         sys.exit(1)  # Exit if initialization fails
 
     # Run the Uvicorn server
-    logger.info(f"Starting server on {server_config.host}:{server_config.port}")
+    port = int(os.environ.get("PORT", server_config.port))
+    logger.info(f"Starting server on {server_config.host}:{port}")
     uvicorn.run(
         app=server.app,
         host=server_config.host,
-        port=server_config.port,
+        port=port,
         log_level=console_log_level.lower(),
     )
 
