@@ -78,7 +78,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm', and more
-        llm_provider: 'lmstudio_llm'
+        llm_provider: 'gemini_llm'
         # let ai speak as soon as the first comma is received on the first sentence
         # to reduced latency.
         faster_first_response: True
@@ -161,12 +161,12 @@ character_config:
         temperature: 0.6 # value between 0 to 2
 
       openai_llm:
-        llm_api_key: 'Your Open AI API key'
+        llm_api_key: '${OPENAI_API_KEY}'
         model: 'gpt-4o'
         temperature: 1.0 # value between 0 to 2
 
       gemini_llm:
-        llm_api_key: 'Your Gemini API key'
+        llm_api_key: '${GEMINI_API_KEY}'
         model: 'gemini-2.0-flash'
         temperature: 0.7
 

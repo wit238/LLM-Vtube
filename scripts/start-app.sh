@@ -5,13 +5,13 @@ mkdir -p /app/conf /app/models /app/avatars /app/backgrounds /app/live2d-models 
 
 # 1) conf.yaml (required)
 if [ -f "/app/conf/conf.yaml" ]; then
-  echo "Using user-provided conf.yaml"
+  echo "Using user-provided conf.yaml from /app/conf/conf.yaml"
   ln -sf /app/conf/conf.yaml /app/conf.yaml
+elif [ -f "/app/conf.yaml" ]; then
+  echo "Using repository conf.yaml"
 elif [ -f "/app/config_templates/conf.default.yaml" ]; then
   echo "Using default config template conf.default.yaml"
   cp /app/config_templates/conf.default.yaml /app/conf.yaml
-elif [ -f "/app/conf.yaml" ]; then
-  echo "Using repository conf.yaml"
 fi
 
 # 2) model_dict.json (optional)
