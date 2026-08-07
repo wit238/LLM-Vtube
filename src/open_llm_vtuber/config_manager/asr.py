@@ -307,6 +307,21 @@ class SherpaOnnxASRConfig(I18nMixin):
         return values
 
 
+class TyphoonASRConfig(I18nMixin):
+    """Configuration for Typhoon ASR."""
+
+    model_name: str = Field("typhoon-ai/typhoon-asr-realtime", alias="model_name")
+    device: str = Field("cpu", alias="device")
+    DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
+        "model_name": Description(
+            en="HuggingFace model repository for Typhoon ASR", zh="Typhoon ASR HuggingFace 模型库"
+        ),
+        "device": Description(
+            en="Device to use for inference (cpu or cuda)", zh="推理设备（cpu 或 cuda）"
+        ),
+    }
+
+
 class ASRConfig(I18nMixin):
     """Configuration for Automatic Speech Recognition."""
 
@@ -318,6 +333,7 @@ class ASRConfig(I18nMixin):
         "fun_asr",
         "groq_whisper_asr",
         "sherpa_onnx_asr",
+        "typhoon_asr",
     ] = Field(..., alias="asr_model")
     azure_asr: Optional[AzureASRConfig] = Field(None, alias="azure_asr")
     faster_whisper: Optional[FasterWhisperConfig] = Field(None, alias="faster_whisper")
@@ -329,6 +345,9 @@ class ASRConfig(I18nMixin):
     )
     sherpa_onnx_asr: Optional[SherpaOnnxASRConfig] = Field(
         None, alias="sherpa_onnx_asr"
+    )
+    typhoon_asr: Optional[TyphoonASRConfig] = Field(
+        None, alias="typhoon_asr"
     )
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {

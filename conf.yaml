@@ -192,8 +192,12 @@ character_config:
 
   # === Automatic Speech Recognition ===
   asr_config:
-    # speech to text model options: 'faster_whisper', 'whisper_cpp', 'whisper', 'azure_asr', 'fun_asr', 'groq_whisper_asr', 'sherpa_onnx_asr'
-    asr_model: 'faster_whisper'
+    # speech to text model options: 'faster_whisper', 'whisper_cpp', 'whisper', 'azure_asr', 'fun_asr', 'groq_whisper_asr', 'sherpa_onnx_asr', 'typhoon_asr'
+    asr_model: 'typhoon_asr'
+
+    typhoon_asr:
+      model_name: 'typhoon-ai/typhoon-asr-realtime'
+      device: 'cpu'
 
     azure_asr:
       api_key: 'azure_api_key'

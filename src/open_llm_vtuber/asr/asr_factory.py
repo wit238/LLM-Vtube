@@ -58,5 +58,12 @@ class ASRFactory:
             from .sherpa_onnx_asr import VoiceRecognition as SherpaOnnxASR
 
             return SherpaOnnxASR(**kwargs)
+        elif system_name == "typhoon_asr":
+            from .typhoon_asr import VoiceRecognition as TyphoonASR
+
+            return TyphoonASR(
+                model_name=kwargs.get("model_name", "typhoon-ai/typhoon-asr-realtime"),
+                device=kwargs.get("device", "cpu"),
+            )
         else:
             raise ValueError(f"Unknown ASR system: {system_name}")
