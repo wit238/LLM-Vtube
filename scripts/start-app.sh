@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-mkdir -p /app/conf /app/models
+mkdir -p /app/conf /app/models /app/avatars /app/backgrounds /app/live2d-models /app/characters /app/cache /app/logs /app/web_tool /app/frontend
 
 # 1) conf.yaml (required)
 if [ -f "/app/conf/conf.yaml" ]; then
@@ -38,6 +38,9 @@ fi
 if [ -d "/app/conf/backgrounds" ]; then
   rm -rf /app/backgrounds && ln -s /app/conf/backgrounds /app/backgrounds
 fi
+
+# Ensure all static directories required by FastAPI exist
+mkdir -p /app/avatars /app/backgrounds /app/live2d-models /app/characters /app/cache /app/logs /app/web_tool /app/frontend
 
 # 7) start app
 exec uv run run_server.py
