@@ -39,9 +39,7 @@ RUN printf '%s\n' \
   '  echo "Using user-provided conf.yaml"' \
   '  ln -sf /app/conf/conf.yaml /app/conf.yaml' \
   'else' \
-  '  echo "ERROR: conf.yaml is required."' \
-  '  echo "Please mount your config dir to /app/conf"' \
-  '  exit 1' \
+  '  echo "Using default repository conf.yaml"' \
   'fi' \
   '' \
   '# 2) model_dict.json (optional)' \
