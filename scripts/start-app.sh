@@ -42,5 +42,10 @@ fi
 # Ensure all static directories required by FastAPI exist
 mkdir -p /app/avatars /app/backgrounds /app/live2d-models /app/characters /app/cache /app/logs /app/web_tool /app/frontend
 
+# Ensure mcp_servers.json exists
+if [ ! -f "/app/mcp_servers.json" ]; then
+  echo '{"mcp_servers": {}}' > /app/mcp_servers.json
+fi
+
 # 7) start app
 exec uv run run_server.py
