@@ -57,6 +57,9 @@ src/open_llm_vtuber/asr/models*
 # Custom Character Assets & Backgrounds
 /backgrounds/*
 !/backgrounds/README.md
+!/backgrounds/*.jpeg
+!/backgrounds/*.jpg
+!/backgrounds/*.png
 /live2d-models/*
 !/live2d-models/mao_pro
 !/live2d-models/shizuku
