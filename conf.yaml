@@ -78,7 +78,7 @@ character_config:
         # 'openai_compatible_llm', 'llama_cpp_llm', 'claude_llm', 'ollama_llm'
         # 'openai_llm', 'gemini_llm', 'zhipu_llm', 'deepseek_llm', 'groq_llm'
         # 'mistral_llm', 'lmstudio_llm', and more
-        llm_provider: 'gemini_llm'
+        llm_provider: 'lmstudio_llm'
         # let ai speak as soon as the first comma is received on the first sentence
         # to reduced latency.
         faster_first_response: True
@@ -156,8 +156,8 @@ character_config:
         unload_at_exit: True # unload the model from memory at exit
 
       lmstudio_llm:
-        base_url: 'http://localhost:1234/v1'
-        model: 'typhoon-7b@q5_k_m'
+        base_url: 'https://sticky-text-word-budapest.trycloudflare.com/v1'
+        model: 'typhoon-7b'
         temperature: 0.6 # value between 0 to 2
 
       openai_llm:
