@@ -313,8 +313,8 @@ character_config:
       # Check out doc at https://github.com/rany2/edge-tts
       # Use `edge-tts --list-voices` to list all available voices
       voice: 'th-TH-PremwadeeNeural' # Thai Female Voice
-      pitch: '+22Hz' # Higher pitch (+22Hz)
-      rate: '-8%' # Speaking rate (-8%)
+      pitch: '+10Hz' # Natural pitch (+10Hz)
+      rate: '-14%' # Slower speaking rate (-14%)
 
     # pyttsx3_tts doesn't have any config.
 
