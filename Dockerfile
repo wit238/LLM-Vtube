@@ -18,10 +18,9 @@ RUN apt-get update -o Acquire::Retries=5 \
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-# Install deps (cache-friendly)
+# Install deps
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev
 
 # Copy source & install project
 COPY . /app
