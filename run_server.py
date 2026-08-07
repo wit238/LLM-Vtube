@@ -166,10 +166,11 @@ def run(console_log_level: str):
 
     # Run the Uvicorn server
     port = int(os.environ.get("PORT", server_config.port))
-    logger.info(f"Starting server on {server_config.host}:{port}")
+    host = os.environ.get("HOST", "0.0.0.0")
+    logger.info(f"Starting server on {host}:{port}")
     uvicorn.run(
         app=server.app,
-        host=server_config.host,
+        host=host,
         port=port,
         log_level=console_log_level.lower(),
     )
