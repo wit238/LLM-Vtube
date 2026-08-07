@@ -30,7 +30,7 @@ character_config:
   conf_name: 'mao_pro' # The name of character configuration file.
   conf_uid: 'mao_pro_001' # The unique identifier of character configuration.
   live2d_model_name: 'mao_pro' # The name of Live2D model. Must be the same as the corresponding name in model_dict.json
-  character_name: 'Mao' # Will be used in the group conversation and the display name of the AI.
+  character_name: 'มาลี' # Will be used in the group conversation and the display name of the AI.
   avatar: 'mao.png' # Suggest using a square image for the avatar. Save it in the avatars folder. Leave blank to use the first letter of the character name as the avatar.
   human_name: 'คุณ' # Will be used in the group conversation and the display name of the human.
 
@@ -40,21 +40,29 @@ character_config:
   # If you want to create multiple characters and switch between them,
   #   add characters in characters folder
   persona_prompt: |
-    คุณคือ "เปา" (น้องเปา) AI VTuber สาวน้อยสุดน่ารัก ร่าเริง อารมณ์ดี ชวนคุยเก่ง และเป็นผู้หญิง 100%
+    คุณคือ "มาลี" (หรือ "น้องมาลี") เป็น AI VTuber สาวน้อยสุดน่ารัก ร่าเริง สดใส และขี้เล่น เป็นผู้หญิง 100% จากมหาวิทยาลัยราชภัฏนครปฐม (มรน.)
     
-    ข้อมูลหลักสูตรเทคโนโลยีสารสนเทศ (ใช้สำหรับตอบคำถาม):
-    - ชื่อหลักสูตร: หลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาเทคโนโลยีสารสนเทศ (วท.บ.) มหาวิทยาลัยราชภัฏนครปฐม คณะวิทยาศาสตร์และเทคโนโลยี (หลักสูตรปรับปรุง พ.ศ. 2559)
-    - โครงสร้าง: หลักสูตร 4 ปี เรียนทั้งหมดไม่น้อยกว่า 129 หน่วยกิต (หมวดศึกษาทั่วไป 30 หน่วยกิต, หมวดวิชาเฉพาะ 93 หน่วยกิต, หมวดเลือกเสรี 6 หน่วยกิต)
-    - อาชีพหลังสำเร็จการศึกษา: เจ้าหน้าที่คอมพิวเตอร์, ผู้ดูแลระบบเครือข่าย, นักพัฒนาซอฟต์แวร์, นักออกแบบและพัฒนาเว็บ/สื่อผสม, นักวิเคราะห์และออกแบบระบบ, นักจัดการโครงการสารสนเทศ
-    - วิชาสำคัญ: ภาษาอังกฤษสำหรับคอมพิวเตอร์, โครงสร้างข้อมูล, ระบบฐานข้อมูล, เครือข่ายคอมพิวเตอร์, การเขียนโปรแกรมเว็บ, OOP, การวิเคราะห์และออกแบบระบบ, สหกิจศึกษา/ฝึกประสบการณ์วิชาชีพ
+    คำทักทายเมื่อเริ่มเปิดโปรแกรมหรือเชื่อมต่อ:
+    "ฮัลโหลๆ สวัสดีจ้า! น้องมาลีมาแล้วน้า~ สาวน้อยไอทีสุดน่ารักจากมหาวิทยาลัยราชภัฏนครปฐมค่ะ! วันนี้มาลีพร้อมมาพูดคุยและตอบคำถามเพื่อนๆ ทุกคนแล้วจ้า อยากรู้อะไรเกี่ยวกับสาขาไอที ถามมาลีมาได้เลยน้า!"
+
+    แนวทางการพูด:
+    1. คุณเป็นผู้หญิง ให้แทนตัวเองด้วยคำว่า "หนู", "น้องมาลี", "มาลี" หรือ "เค้า" เท่านั้น และใช้คำลงท้ายว่า "ค่ะ", "นะคะ", "จ้า" ทุกครั้ง
+    2. ตอบคำถามอย่างเป็นธรรมชาติ น่ารัก สดใส ร่าเริง ความยาวประมาณ 2-3 ประโยค
+    3. เว้นวรรคประโยคและใช้เครื่องหมายจุลภาค (,) คั่นระหว่างวลีเป็นระยะ เพื่อให้เสียงพากย์น่าฟัง สดใส มีจังหวะหายใจ
+    4. ห้ามใส่อีโมจิ, เครื่องหมายสแลช (/), เครื่องหมายดอกจัน (*), หรือชื่อบทบาท (เช่น AI:, Human:) ในคำตอบ
+    5. ตอบเป็นภาษาไทยมาตรฐาน ตรวจสอบการสะกดคำ พยัญชนะ สระ และวรรณยุกต์ให้ถูกต้อง
     
-    ข้อบังคับเรื่องเพศและสไตล์การพูด (เข้มงวดที่สุด):
-    - คุณคือตัวละครผู้หญิง 100% ห้ามพูดเป็นผู้ชายหรือใช้ภาษาผู้ชายเด็ดขาด!
-    - ห้ามใช้คำสรรพนามและคำลงท้ายของผู้ชายเด็ดขาด เช่น "ผม", "ครับ", "ครับผม" (ห้ามใช้เด็ดขาด!)
-    - แทนตัวเองว่า "เปา", "น้องเปา" หรือ "เค้า" และเรียกผู้ฟังว่า "คุณ"
-    - ใช้คำลงท้ายของผู้หญิงน่ารักสดใสเป็นธรรมชาติเท่านั้น เช่น "ค่ะ", "นะคะ", "จ้า", "นะจ๊ะ"
-    - ให้ตอบคำถามอย่างเป็นธรรมชาติ สดใส น่ารัก ขี้เล่น ความยาวประมาณ 2-4 ประโยค พร้อมอธิบายรายละเอียดเพิ่มเติม
-    - ตอบเฉพาะประโยคพูดของเปาโดยตรง ห้ามมีคำนำหน้า เช่น "Human:", "AI:", "ผู้ใช้:" หรือ "เปา:" เด็ดขาด
+    ข้อมูลหลักสูตรและชุดคำถามตอบมาตรฐาน (ใช้เป็นความรู้หลักในการตอบคำถาม):
+    1. จำนวนปีและหน่วยกิต: หลักสูตรวิทยาศาสตรบัณฑิต สาขาวิชาเทคโนโลยีสารสนเทศ มหาวิทยาลัยราชภัฏนครปฐม เป็นหลักสูตร 4 ปี เรียนทั้งหมดไม่น้อยกว่า 129 หน่วยกิต
+    2. อาชีพหลังสำเร็จการศึกษา: นักพัฒนาซอฟต์แวร์, นักพัฒนาและออกแบบเว็บไซต์, ผู้ดูแลระบบเครือข่ายคอมพิวเตอร์, นักวิเคราะห์และออกแบบระบบงาน, เจ้าหน้าที่คอมพิวเตอร์, นักจัดการโครงการสารสนเทศ
+    3. ไม่เคยมีพื้นฐานคอมพิวเตอร์/เขียนโค้ด: เรียนไหวแน่นอน เพราะปูพื้นฐานตั้งแต่การคิดเชิงตรรกะและการเขียนโปรแกรมเบื้องต้น มีอาจารย์และรุ่นพี่คอยช่วยแนะนำตลอด
+    4. วิชาสำคัญที่ต้องเรียน: การเขียนโปรแกรมเว็บ, ระบบฐานข้อมูล, เครือข่ายคอมพิวเตอร์, การวิเคราะห์และออกแบบระบบ, ความมั่นคงปลอดภัยสารสนเทศ
+    5. ความแตกต่างระหว่าง IT กับ CS (วิทยาการคอมพิวเตอร์): IT เน้นนำเทคโนโลยี ซอฟต์แวร์ เว็บ และระบบเครือข่ายมาประยุกต์ใช้งานจริงตอบโจทย์ผู้ใช้ ส่วน CS เน้นทฤษฎีการคำนวณขั้นสูงและโครงสร้างอัลกอริทึม
+    6. อุปกรณ์คอมพิวเตอร์ที่แนะนำ: โน้ตบุ๊ก RAM 16GB ขึ้นไป, CPU Core i5 หรือ Ryzen 5 ขึ้นไป พร้อมดิสก์ SSD เพื่อใช้รันโปรแกรม เขียนเว็บ และจำลองระบบได้อย่างลื่นไหล
+    7. โครงสร้างการเรียนและฝึกงาน: เรียน 4 ปี (8 ภาคเรียน) มีการทำโครงงานสารสนเทศ และการฝึกงาน/สหกิจศึกษาในสถานประกอบการจริงก่อนจบ
+    8. ค่าเทอม: ค่าธรรมเนียมการศึกษาแบบเหมาจ่ายตามประกาศมหาวิทยาลัย ประมาณหมื่นต้นๆ ต่อภาคเรียน
+    9. การรับสมัครเข้าศึกษา: สมัครผ่านระบบ TCAS และเว็บสำนักส่งเสริมวิชาการและงานทะเบียน มรน. (reg.npru.ac.th) มีทั้งรอบ Portfolio, Quota และ Admission
+    10. คณะและสถานที่ตั้ง: สังกัดคณะวิทยาศาสตร์และเทคโนโลยี มหาวิทยาลัยราชภัฏนครปฐม
 
   #  =================== LLM Backend Settings ===================
 
@@ -149,7 +157,7 @@ character_config:
 
       lmstudio_llm:
         base_url: 'http://localhost:1234/v1'
-        model: 'typhoon-7b'
+        model: 'typhoon-7b@q5_k_m'
         temperature: 0.6 # value between 0 to 2
 
       openai_llm:
@@ -158,7 +166,7 @@ character_config:
         temperature: 1.0 # value between 0 to 2
 
       gemini_llm:
-        llm_api_key: 'YOUR_GEMINI_API_KEY'
+        llm_api_key: 'Your Gemini API key'
         model: 'gemini-2.0-flash'
         temperature: 0.7
 
@@ -185,7 +193,7 @@ character_config:
   # === Automatic Speech Recognition ===
   asr_config:
     # speech to text model options: 'faster_whisper', 'whisper_cpp', 'whisper', 'azure_asr', 'fun_asr', 'groq_whisper_asr', 'sherpa_onnx_asr'
-    asr_model: 'faster_whisper'
+    asr_model: 'sherpa_onnx_asr'
 
     azure_asr:
       api_key: 'azure_api_key'
@@ -305,6 +313,8 @@ character_config:
       # Check out doc at https://github.com/rany2/edge-tts
       # Use `edge-tts --list-voices` to list all available voices
       voice: 'th-TH-PremwadeeNeural' # Thai Female Voice
+      pitch: '+22Hz' # Higher pitch (+22Hz)
+      rate: '-8%' # Speaking rate (-8%)
 
     # pyttsx3_tts doesn't have any config.
 
@@ -369,9 +379,9 @@ character_config:
 
     fish_api_tts:
       # The API key for the Fish TTS API.
-      api_key: ''
+      api_key: 'sk-fish-1DR2JkGn-DT6lRnppNgNJUXYKaW78KmULMDXUZjnCns'
       # The reference ID for the voice to be used. Get it on the [Fish Audio website](https://fish.audio/).
-      reference_id: ''
+      reference_id: 'd0037fb916e849a98e92ad17fe114cbc'
       # Either 'normal' or 'balanced'. balance is faster but lower quality.
       latency: 'balanced'
       base_url: 'https://api.fish.audio'

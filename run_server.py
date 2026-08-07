@@ -21,6 +21,11 @@ venv_scripts = str(Path(sys.executable).parent)
 if venv_scripts not in os.environ.get("PATH", ""):
     os.environ["PATH"] = venv_scripts + os.pathsep + os.environ.get("PATH", "")
 
+import pydub
+ffmpeg_exe = Path(venv_scripts) / "ffmpeg.exe"
+if ffmpeg_exe.exists():
+    pydub.AudioSegment.converter = str(ffmpeg_exe)
+
 upgrade_manager = UpgradeManager()
 
 

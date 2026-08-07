@@ -29,10 +29,13 @@ class CORSStaticFiles(StarletteStaticFiles):
     async def get_response(self, path: str, scope):
         response = await super().get_response(path, scope)
 
-        # Add CORS headers to all responses
+        # Add CORS and anti-caching headers to all responses
         response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "*"
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
 
         if path.endswith(".js"):
             response.headers["Content-Type"] = "application/javascript"

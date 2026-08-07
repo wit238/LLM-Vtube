@@ -1,8 +1,16 @@
 import base64
+import sys
+from pathlib import Path
+import pydub
 from pydub import AudioSegment
 from pydub.utils import make_chunks
 from ..agent.output_types import Actions
 from ..agent.output_types import DisplayText
+
+# Ensure pydub uses ffmpeg executable from venv
+venv_ffmpeg = Path(sys.executable).parent / "ffmpeg.exe"
+if venv_ffmpeg.exists():
+    AudioSegment.converter = str(venv_ffmpeg)
 
 
 def _get_volume_by_chunks(audio: AudioSegment, chunk_length_ms: int) -> list:

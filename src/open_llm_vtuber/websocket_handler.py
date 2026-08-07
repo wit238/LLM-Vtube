@@ -27,6 +27,9 @@ from .conversations.conversation_handler import (
     handle_group_interrupt,
     handle_individual_interrupt,
 )
+from .conversations.tts_manager import TTSTaskManager
+from .agent.output_types import DisplayText
+from .conversations.faq_handler import GREETING_AUDIO_PATH
 
 
 class MessageType(Enum):
@@ -95,6 +98,7 @@ class WebSocketHandler:
             "audio-play-start": self._handle_audio_play_start,
             "request-init-config": self._handle_init_config_request,
             "heartbeat": self._handle_heartbeat,
+            "trigger-greeting": self._handle_trigger_greeting,
         }
 
     async def handle_new_connection(
@@ -172,8 +176,89 @@ class WebSocketHandler:
         # Send initial group status
         await self.send_group_update(websocket, client_uid)
 
-        # Start microphone - DISABLED so mic stays off by default
-        # await websocket.send_text(json.dumps({"type": "control", "text": "start-mic"}))
+        # Trigger initial greeting speech when program/page opens
+        async def _trigger_initial_greeting():
+            await asyncio.sleep(3.0)
+            try:
+                greeting_text = (
+                    "ฮัลโหลๆ สวัสดีจ้า! น้องมาลีมาแล้วน้า~ สาวน้อยไอทีสุดน่ารักจากมหาวิทยาลัยราชภัฏนครปฐมค่ะ! "
+                    "วันนี้มาลีพร้อมมาพูดคุยและตอบคำถามเพื่อนๆ ทุกคนแล้วจ้า อยากรู้อะไรเกี่ยวกับสาขาไอที ถามมาลีมาได้เลยน้า!"
+                )
+
+                # Send start control signal and text to frontend UI
+                await websocket.send_text(
+                    json.dumps({"type": "control", "text": "conversation-chain-start"})
+                )
+
+                # Stream pre-rendered MP3 audio payload to frontend UI
+                display_text = DisplayText(
+                    name=session_service_context.character_config.character_name or "มาลี",
+                    avatar=session_service_context.character_config.avatar or "mao.png",
+                    text=greeting_text,
+                )
+                payload = prepare_audio_payload(
+                    audio_path=GREETING_AUDIO_PATH,
+                    display_text=display_text,
+                    actions=None,
+                )
+                await websocket.send_text(json.dumps(payload))
+                await websocket.send_text(
+                    json.dumps({"type": "backend-synth-complete"})
+                )
+                await message_handler.wait_for_response(
+                    client_uid, "frontend-playback-complete"
+                )
+
+                await websocket.send_text(
+                    json.dumps({"type": "control", "text": "conversation-chain-end"})
+                )
+            except Exception as e:
+                logger.error(f"Error triggering initial greeting: {e}")
+
+        # Auto-greeting on connection startup disabled per user request:
+        # User must click the "เริ่มพูด" button to initiate speech.
+        # asyncio.create_task(_trigger_initial_greeting())
+
+    async def _handle_trigger_greeting(
+        self, websocket: WebSocket, client_uid: str, data: dict
+    ) -> None:
+        """Stream pre-rendered greeting audio immediately without adding to chat history"""
+        session_service_context = self.client_contexts.get(client_uid)
+        if not session_service_context:
+            return
+
+        greeting_text = (
+            "ฮัลโหลๆ สวัสดีจ้า! น้องมาลีมาแล้วน้า~ สาวน้อยไอทีสุดน่ารักจากมหาวิทยาลัยราชภัฏนครปฐมค่ะ! "
+            "วันนี้มาลีพร้อมมาพูดคุยและตอบคำถามเพื่อนๆ ทุกคนแล้วจ้า อยากรู้อะไรเกี่ยวกับสาขาไอที ถามมาลีมาได้เลยน้า!"
+        )
+
+        try:
+            await websocket.send_text(
+                json.dumps({"type": "control", "text": "conversation-chain-start"})
+            )
+
+            display_text = DisplayText(
+                name=session_service_context.character_config.character_name or "มาลี",
+                avatar=session_service_context.character_config.avatar or "mao.png",
+                text=greeting_text,
+            )
+            payload = prepare_audio_payload(
+                audio_path=GREETING_AUDIO_PATH,
+                display_text=display_text,
+                actions=None,
+            )
+            await websocket.send_text(json.dumps(payload))
+            await websocket.send_text(
+                json.dumps({"type": "backend-synth-complete"})
+            )
+            await message_handler.wait_for_response(
+                client_uid, "frontend-playback-complete"
+            )
+            await websocket.send_text(
+                json.dumps({"type": "control", "text": "conversation-chain-end"})
+            )
+        except Exception as e:
+            logger.error(f"Error streaming trigger greeting: {e}")
 
     async def _init_service_context(
         self, send_text: Callable, client_uid: str

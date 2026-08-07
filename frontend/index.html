@@ -1,13 +1,43 @@
 <!doctype html>
-<html>
+<html lang="th">
   <head>
     <meta charset="UTF-8" />
-    <title>Open-LLM-Vtuber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>น้องเปา AI VTuber - มหาวิทยาลัยราชภัฏนครปฐม</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script type="module" crossorigin src="./assets/main-CKgUHFa9.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css">
+    <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css?v=v30_hide_subtitle_force">
   </head>
 
   <body>
     <div id="root"></div>
+
+    <script>
+      function hideSubtitleBox() {
+        if (window.inputSubtitle && typeof window.inputSubtitle.close === 'function') {
+          try { window.inputSubtitle.close(); } catch(e) {}
+        }
+
+        const closeBtns = document.querySelectorAll('button[aria-label="Close subtitle"]');
+        closeBtns.forEach(btn => {
+          const parentBox = btn.parentElement;
+          if (parentBox) {
+            parentBox.style.setProperty('display', 'none', 'important');
+            parentBox.style.setProperty('opacity', '0', 'important');
+            parentBox.style.setProperty('visibility', 'hidden', 'important');
+          }
+          btn.style.setProperty('display', 'none', 'important');
+        });
+      }
+
+      const observer = new MutationObserver(hideSubtitleBox);
+      document.addEventListener('DOMContentLoaded', () => {
+        hideSubtitleBox();
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        setInterval(hideSubtitleBox, 100);
+      });
+    </script>
   </body>
 </html>
