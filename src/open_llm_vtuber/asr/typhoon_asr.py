@@ -44,10 +44,13 @@ class VoiceRecognition(ASRInterface):
                     return ""
                 if isinstance(res, str):
                     return res.strip()
-                if hasattr(res, "text"):
-                    return str(getattr(res, "text")).strip()
                 if isinstance(res, dict) and "text" in res:
-                    return str(res["text"]).strip()
+                    return extract_text(res["text"])
+                if hasattr(res, "text"):
+                    val = getattr(res, "text")
+                    if isinstance(val, str):
+                        return val.strip()
+                    return extract_text(val)
                 if isinstance(res, (list, tuple)) and len(res) > 0:
                     return extract_text(res[0])
                 return str(res).strip()
