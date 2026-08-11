@@ -186,11 +186,11 @@ character_config:
 
       # OpenAI Compatible inference backend
       openai_compatible_llm:
-        base_url: 'https://opencode.ai/zen/v1'
+        base_url: 'https://opencode.ai/zen/go/v1'
         llm_api_key: '${OPENCODE_API_KEY}'
         organization_id: null
         project_id: null
-        model: 'deepseek-v4-flash-free'
+        model: 'deepseek-v4-flash' # OpenCode Go plan model (fast, reliable)
         temperature: 0.7 # value between 0 to 2
         interrupt_method: 'user'
         # This is the method to use for prompting the interruption signal. 
