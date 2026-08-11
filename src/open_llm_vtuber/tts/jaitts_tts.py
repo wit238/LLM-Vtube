@@ -141,9 +141,15 @@ class TTSEngine(TTSInterface):
                     f"jaitts_tts: {e} - falling back to {self.fallback_tts}"
                 )
                 try:
-                    return engine.generate_audio(text, file_name_no_ext)
+                    result = engine.generate_audio(text, file_name_no_ext)
                 except Exception as fe:
                     logger.error(f"jaitts_tts: fallback TTS also failed: {fe}")
+                else:
+                    if result:
+                        return result
+                    logger.error(
+                        "jaitts_tts: fallback TTS returned no audio - re-raising"
+                    )
             raise
         finally:
             if files is not None:
