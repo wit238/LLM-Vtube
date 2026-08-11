@@ -72,6 +72,9 @@ class ServiceContext:
         self.send_text: Callable = None
         self.client_uid: str = None
 
+        # True only after load_from_config fully completes (all engines ready)
+        self._initialized: bool = False
+
     def __str__(self):
         return (
             f"ServiceContext:\n"
@@ -310,6 +313,10 @@ class ServiceContext:
         self.config = config
         self.system_config = config.system_config or self.system_config
         self.character_config = config.character_config
+
+        # Mark as fully initialized only after every engine is ready, so new
+        # sessions never clone a half-built context (e.g. agent_engine=None)
+        self._initialized = True
 
     def init_live2d(self, live2d_model_name: str) -> None:
         logger.info(f"Initializing Live2D: {live2d_model_name}")
