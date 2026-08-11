@@ -259,6 +259,10 @@ character_config:
     typhoon_asr:
       model_name: 'scb10x/typhoon-asr-realtime'
       device: 'cuda'
+      # Lock ASR to Thai only: transcripts that are not predominantly Thai
+      # (e.g. English speech) are ignored instead of being processed.
+      force_thai: true
+      thai_threshold: 0.3 # Minimum Thai character ratio (0-1) to accept a transcript
 
     azure_asr:
       api_key: 'azure_api_key'

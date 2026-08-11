@@ -24,6 +24,8 @@ from .embedder import embed_texts
 
 CACHE_META = "index.json"
 CACHE_VECTORS = "vectors.npy"
+# Bump when chunking/embedding logic changes so stale caches are rebuilt
+CACHE_VERSION = 2
 
 
 def _file_hash(content: str) -> str:
@@ -176,6 +178,8 @@ class KnowledgeBase:
     def _load_chunks(self, path: Path) -> list:
         try:
             data = self._load_manifest(path)
+            if data.get("version") != CACHE_VERSION:
+                return []  # stale chunker/embedder layout -> force rebuild
             return data.get("chunks", [])
         except Exception:
             return []

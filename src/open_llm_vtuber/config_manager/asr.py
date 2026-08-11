@@ -312,12 +312,22 @@ class TyphoonASRConfig(I18nMixin):
 
     model_name: str = Field("typhoon-ai/typhoon-asr-realtime", alias="model_name")
     device: str = Field("cpu", alias="device")
+    force_thai: bool = Field(True, alias="force_thai")
+    thai_threshold: float = Field(0.3, alias="thai_threshold")
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "model_name": Description(
             en="HuggingFace model repository for Typhoon ASR", zh="Typhoon ASR HuggingFace 模型库"
         ),
         "device": Description(
             en="Device to use for inference (cpu or cuda)", zh="推理设备（cpu 或 cuda）"
+        ),
+        "force_thai": Description(
+            en="Ignore transcripts that are not predominantly Thai (lock ASR to Thai only)",
+            zh="忽略非泰语为主的转录（将 ASR 锁定为仅泰语）",
+        ),
+        "thai_threshold": Description(
+            en="Minimum ratio of Thai characters for a transcript to be accepted (0-1)",
+            zh="转录被接受的泰语字符最低比例（0-1）",
         ),
     }
 

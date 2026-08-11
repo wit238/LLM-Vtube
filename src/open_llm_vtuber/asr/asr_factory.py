@@ -64,6 +64,8 @@ class ASRFactory:
             return TyphoonASR(
                 model_name=kwargs.get("model_name", "typhoon-ai/typhoon-asr-realtime"),
                 device=kwargs.get("device", "cpu"),
+                force_thai=kwargs.get("force_thai", True),
+                thai_threshold=kwargs.get("thai_threshold", 0.3),
             )
         else:
             raise ValueError(f"Unknown ASR system: {system_name}")

@@ -39,19 +39,44 @@ def _strip_code_fences(text: str) -> str:
     return "\n".join(lines)
 
 
+def _split_into_units(text: str) -> list[str]:
+    """Split text into sentence-ish units: lines first, then Thai/English
+    sentence enders (`.`, `!`, `?`) within each line. Chunks built from
+    these units never cut mid-sentence or mid-word."""
+    units: list[str] = []
+    for para in text.splitlines():
+        para = para.strip()
+        if not para:
+            continue
+        for sent in re.split(r"(?<=[.!?])\s+", para):
+            sent = sent.strip()
+            if sent:
+                units.append(sent)
+    return units
+
+
 def _split_with_overlap(text: str, size: int, overlap: int) -> list[str]:
+    """Split text at sentence boundaries into chunks of ~`size` characters.
+
+    Each piece ends on a unit boundary, so no chunk starts mid-sentence or
+    mid-word. `overlap` (when > 0) keeps one extra unit at the start of the
+    next chunk so context around the boundary is preserved for retrieval.
+    """
     if len(text) <= size:
         return [text.strip()]
-    pieces = []
-    start = 0
-    while start < len(text):
-        piece = text[start : start + size].strip()
-        if piece:
-            pieces.append(piece)
-        next_start = start + size - overlap
-        if next_start <= start:
-            break
-        start = next_start
+    units = _split_into_units(text)
+    pieces: list[str] = []
+    i = 0
+    n = len(units)
+    overlap_units = 1 if overlap > 0 else 0
+    while i < n:
+        piece = units[i]
+        j = i + 1
+        while j < n and len(piece) + len(units[j]) + 1 <= size:
+            piece += " " + units[j]
+            j += 1
+        pieces.append(piece)
+        i = max(j - overlap_units, i + 1)
     return pieces
 
 
