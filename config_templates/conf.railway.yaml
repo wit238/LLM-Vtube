@@ -4,10 +4,10 @@
 #
 # Required Railway service variables (set in Railway dashboard):
 #   OPENCODE_API_KEY  - LLM gateway key (https://opencode.ai)
-#   JAITTS_REF_AUDIO - path to the JaiTTS reference voice WAV
 #   JAITTS_SERVER_DIR- dir containing the JaiTTS server_local.py + .venv
 # Optional:
 #   FISH_API_KEY, ELEVENLABS_API_KEY
+#   JAITTS_REF_AUDIO - override the reference voice WAV (default: assets/jaitts/ref.wav)
 #
 # NOTE: JaiTTS/Typhoon require GPU + a local JaiTTS server. On Railway
 # without GPU, keep auto_start:true only if a JaiTTS server is reachable;
@@ -369,7 +369,7 @@ character_config:
       # auto_start: spawns the JaiTTS server (jaitts_modal CUDA venv) automatically
       # when the VTuber server starts; it is stopped again on exit.
       api_url: 'http://127.0.0.1:8021/synthesize'
-      ref_audio_path: '${JAITTS_REF_AUDIO}'
+      ref_audio_path: 'assets/jaitts/ref.wav'
       ref_text: 'แต่ว่าขอบคุณนะ วันนี้จะเล่นอะไรดี มาเล่นเกมกันเถอะ มีลิชนะขาดอยู่แล้ว เอ๊ะ แพ้แล้ว ไม่จริง แบบนี้มันโกงกันนี่ ขออีกตา ตานี้สุดท้ายจริงๆ นะ อะฮ่าฮ่า เย้'
       speed: 1.0 # Speech speed multiplier
       seed: -1 # Fixed seed = reproducible output; -1 = random
