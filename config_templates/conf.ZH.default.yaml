@@ -36,6 +36,22 @@ character_config:
   avatar: 'mao.png' # 建议使用正方形图像作为头像。将其保存到 avatars 文件夹中。留空则使用角色名称的首字母作为头像。
   human_name: 'Human' # 将在群聊中使用，并显示为人类的名称。
 
+  # ============== 文件知识库（RAG） ==============
+  # 把 .md 文件放进下面这个文件夹，服务每次启动都会索引它们，
+  # 对话时会检索相关内容，让回答有依据。
+  knowledge_config:
+    enabled: true
+    folder_path: 'knowledge_md' # 要扫描的 Markdown 文件文件夹
+    embedding_model: 'BAAI/bge-m3' # 句子嵌入模型（多语言，泰语支持好）
+    embedding_device: 'cpu' # 建议 'cpu'，避免与 JaiTTS 的 CUDA 管线争抢
+    chunk_size: 1000 # 每个文本块的预期字符数
+    chunk_overlap: 150 # 相邻文本块之间的重叠字符数
+    top_k: 4 # 注入 LLM 上下文的最相关文本块数量
+    min_score: 0.2 # 检索文本块的最低余弦相似度（0-1）
+    cache_dir: 'cache/knowledge' # 持久化文本块与嵌入缓存的目录
+    extension: '.md' # 要索引的文件扩展名
+    include_sources: true # 在每个检索到的文本块上附加来源文件名/标题
+
   # ============== 提示词 ==============
 
   # 只需在下面输入你想使用的人格提示。
@@ -274,7 +290,31 @@ character_config:
     #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
     #   'cosyvoice_tts', 'melo_tts', 'coqui_tts', 'piper_tts',
     #   'fish_api_tts', 'x_tts', 'gpt_sovits_tts', 'sherpa_onnx_tts'
-    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts'
+    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts', 'jaitts_tts'
+
+    jaitts_tts:
+      # JaiTTS（F5-TTS）泰语零样本声音克隆，通过本地 JaiTTS 服务器调用。
+      # auto_start：VTuber 服务启动时自动拉起 JaiTTS 服务器（独立 CUDA 环境），退出时自动停止。
+      # server_dir 必须指向包含 server_local.py 及 .venv 的目录。
+      api_url: 'http://127.0.0.1:8021/synthesize'
+      ref_audio_path: 'path/to/ref.wav'
+      ref_text: '参考音频的文字稿'
+      speed: 1.0 # 语速倍数
+      seed: -1 # 固定种子即可复现；-1 为随机
+      timeout: 300.0 # 单次合成的 HTTP 超时（秒）
+      auto_start: true # 随 run_server 自动启动 JaiTTS 服务器
+      server_dir: '' # 服务器目录（server_local.py + .venv）。留空则自动从 ref_audio_path 所在目录推导
+      server_startup_timeout: 300 # 等待模型加载就绪的超时秒数
+      # 后处理生成的 WAV，裁掉开头杂音/结尾噪音
+      # （与 jaitts_modal 的 trim_leading.py 相同：用 faster-whisper 词级时间戳对照文本对齐）
+      trim_audio: true
+      trim_model: 'small' # 用于裁剪的 faster-whisper 模型大小
+      trim_device: 'cpu' # 建议 'cpu'，避免与 JaiTTS 的 CUDA 管线争抢
+      trim_compute_type: 'int8'
+      trim_download_root: 'models/whisper' # 裁剪模型的缓存目录
+      trim_headroom: 0.10 # 第一个匹配词之前保留的音频秒数
+      trim_tail_margin: 0.15 # 最后一个匹配词之后保留的音频秒数
+      trim_min_cut: 0.30 # 进行裁剪所需的最小垃圾音频秒数
 
     siliconflow_tts:
       api_url: "https://api.siliconflow.cn/v1/audio/speech"

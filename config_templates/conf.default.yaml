@@ -34,6 +34,22 @@ character_config:
   avatar: 'mao.png' # Suggest using a square image for the avatar. Save it in the avatars folder. Leave blank to use the first letter of the character name as the avatar.
   human_name: 'Human' # Will be used in the group conversation and the display name of the human.
 
+  # ============== File Knowledge Base (RAG) ==============
+  # Drop .md files into the folder below - they are indexed at every server
+  # start and retrieved at conversation time so answers are grounded in them.
+  knowledge_config:
+    enabled: true
+    folder_path: 'knowledge_md' # Folder to scan for markdown files
+    embedding_model: 'BAAI/bge-m3' # Sentence-embedding model (multilingual, good Thai support)
+    embedding_device: 'cpu' # 'cpu' recommended so it doesn't fight the JaiTTS CUDA pipeline
+    chunk_size: 1000 # Target characters per chunk
+    chunk_overlap: 150 # Characters of overlap between consecutive chunks
+    top_k: 4 # Number of most relevant chunks injected into the LLM context
+    min_score: 0.2 # Minimum cosine similarity for a chunk to be retrieved (0-1)
+    cache_dir: 'cache/knowledge' # Persistent chunk+embedding cache
+    extension: '.md' # File extension to index
+    include_sources: true # Attach source filename/heading to each retrieved chunk
+
   # ============== Prompts ==============
 
   # Enter the persona prompt you want to use below.
@@ -277,7 +293,33 @@ character_config:
     #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
     #   'cosyvoice_tts', 'melo_tts', 'coqui_tts', 'piper_tts',
     #   'fish_api_tts', 'x_tts', 'gpt_sovits_tts', 'sherpa_onnx_tts'
-    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts'
+    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts', 'jaitts_tts'
+
+    jaitts_tts:
+      # JaiTTS (F5-TTS) Thai zero-shot voice cloning via the local JaiTTS server.
+      # auto_start: spawns the JaiTTS server (its own CUDA venv) when the VTuber
+      # server starts, and stops it on exit. server_dir must point to the folder
+      # containing server_local.py and its .venv.
+      api_url: 'http://127.0.0.1:8021/synthesize'
+      ref_audio_path: 'path/to/ref.wav'
+      ref_text: 'transcript of the reference audio'
+      speed: 1.0 # Speech speed multiplier
+      seed: -1 # Fixed seed = reproducible output; -1 = random
+      timeout: 300.0 # HTTP timeout in seconds for one synthesis call
+      auto_start: true # Start the JaiTTS server automatically together with run_server
+      server_dir: '' # Server folder (server_local.py + .venv). Empty = auto-detect next to ref_audio_path
+      server_startup_timeout: 300 # Max seconds to wait for the model to load before giving up
+      # Post-process the generated WAV to cut leading garbage / trailing noise
+      # (same method as jaitts_modal trim_leading.py: faster-whisper word
+      # timestamps aligned against the spoken text).
+      trim_audio: true
+      trim_model: 'small' # faster-whisper model size used for trimming
+      trim_device: 'cpu' # 'cpu' recommended so it doesn't fight the JaiTTS CUDA pipeline
+      trim_compute_type: 'int8'
+      trim_download_root: 'models/whisper' # Where the trim model is cached
+      trim_headroom: 0.10 # Seconds kept before the first matched word
+      trim_tail_margin: 0.15 # Seconds kept after the last matched word
+      trim_min_cut: 0.30 # Minimum garbage seconds before a cut is applied
 
     azure_tts:
       api_key: 'azure-api-key'

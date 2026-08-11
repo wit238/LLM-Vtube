@@ -235,6 +235,13 @@ class BasicMemoryAgent(AgentInterface):
         messages = self._memory.copy()
         user_content = []
         text_prompt = self._to_text_prompt(input_data)
+        knowledge_context = None
+        if input_data.metadata and input_data.metadata.get("knowledge_context"):
+            knowledge_context = input_data.metadata["knowledge_context"]
+
+        if knowledge_context:
+            user_content.append({"type": "text", "text": knowledge_context})
+
         if text_prompt:
             user_content.append({"type": "text", "text": text_prompt})
 

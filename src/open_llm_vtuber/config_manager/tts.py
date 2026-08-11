@@ -159,8 +159,12 @@ class EdgeTTSConfig(I18nMixin):
             en="Voice name to use for Edge TTS (use 'edge-tts --list-voices' to list available voices)",
             zh="Edge TTS 使用的语音名称（使用 'edge-tts --list-voices' 列出可用语音）",
         ),
-        "pitch": Description(en="Pitch adjustment (e.g. '+12Hz' or '+10%')", zh="音高调整"),
-        "rate": Description(en="Speaking rate adjustment (e.g. '+8%' or '+10%')", zh="语速调整"),
+        "pitch": Description(
+            en="Pitch adjustment (e.g. '+12Hz' or '+10%')", zh="音高调整"
+        ),
+        "rate": Description(
+            en="Speaking rate adjustment (e.g. '+8%' or '+10%')", zh="语速调整"
+        ),
     }
 
 
@@ -684,6 +688,99 @@ class CartesiaTTSConfig(I18nMixin):
     }
 
 
+class JaiTTSTTSConfig(I18nMixin):
+    """Configuration for JaiTTS (F5-TTS Thai zero-shot voice cloning).
+
+    The engine is an HTTP client for the local JaiTTS server
+    (jaitts_modal/server_local.py, started via start_jaitts_server.bat).
+    """
+
+    api_url: str = Field("http://127.0.0.1:8021/synthesize", alias="api_url")
+    ref_audio_path: str = Field(..., alias="ref_audio_path")
+    ref_text: str = Field("", alias="ref_text")
+    speed: float = Field(1.0, alias="speed")
+    seed: int = Field(-1, alias="seed")
+    timeout: float = Field(300.0, alias="timeout")
+    auto_start: bool = Field(True, alias="auto_start")
+    server_dir: str = Field("", alias="server_dir")
+    server_startup_timeout: int = Field(300, alias="server_startup_timeout")
+    trim_audio: bool = Field(True, alias="trim_audio")
+    trim_model: str = Field("small", alias="trim_model")
+    trim_device: str = Field("cpu", alias="trim_device")
+    trim_compute_type: str = Field("int8", alias="trim_compute_type")
+    trim_download_root: str = Field("models/whisper", alias="trim_download_root")
+    trim_headroom: float = Field(0.10, alias="trim_headroom")
+    trim_tail_margin: float = Field(0.15, alias="trim_tail_margin")
+    trim_min_cut: float = Field(0.30, alias="trim_min_cut")
+
+    DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
+        "api_url": Description(
+            en="URL of the local JaiTTS server /synthesize endpoint",
+            zh="本地 JaiTTS 服务器的 /synthesize 端点地址",
+        ),
+        "ref_audio_path": Description(
+            en="Path to the reference audio WAV used to clone the voice",
+            zh="用于克隆声音的参考音频 WAV 路径",
+        ),
+        "ref_text": Description(
+            en="Transcript of the reference audio (Thai)",
+            zh="参考音频的文字稿（泰语）",
+        ),
+        "speed": Description(en="Speech speed multiplier", zh="语速倍数"),
+        "seed": Description(
+            en="Random seed (>-1 = reproducible)", zh="随机种子（>-1 可复现）"
+        ),
+        "timeout": Description(
+            en="HTTP timeout in seconds for one synthesis call",
+            zh="单次合成的 HTTP 超时（秒）",
+        ),
+        "auto_start": Description(
+            en="Auto-spawn the JaiTTS server subprocess when the VTuber server starts",
+            zh="启动 VTuber 服务时自动拉起 JaiTTS 服务器子进程",
+        ),
+        "server_dir": Description(
+            en="Directory containing server_local.py and its .venv (required for auto_start; empty = derive from ref_audio_path)",
+            zh="包含 server_local.py 及 .venv 的目录（auto_start 需要；留空则从 ref_audio_path 推导）",
+        ),
+        "server_startup_timeout": Description(
+            en="Seconds to wait for the JaiTTS server (model load) before giving up",
+            zh="等待 JaiTTS 服务器（模型加载）就绪的超时秒数",
+        ),
+        "trim_audio": Description(
+            en="Post-process generated WAVs with faster-whisper to cut leading garbage / trailing noise",
+            zh="用 faster-whisper 后处理生成的 WAV，裁掉开头杂音/结尾噪音",
+        ),
+        "trim_model": Description(
+            en="faster-whisper model size used for trimming (e.g. 'small')",
+            zh="用于裁剪的 faster-whisper 模型大小（如 'small'）",
+        ),
+        "trim_device": Description(
+            en="Device for the trim model ('cpu' recommended so it doesn't fight the JaiTTS CUDA pipeline)",
+            zh="裁剪模型的设备（建议 'cpu'，避免与 JaiTTS 的 CUDA 管线争抢）",
+        ),
+        "trim_compute_type": Description(
+            en="Compute type for the trim model (e.g. 'int8', 'float16')",
+            zh="裁剪模型的计算类型（如 'int8'、'float16'）",
+        ),
+        "trim_download_root": Description(
+            en="Directory where the trim model is downloaded/cached",
+            zh="裁剪模型的下载/缓存目录",
+        ),
+        "trim_headroom": Description(
+            en="Seconds of audio kept before the first matched word",
+            zh="第一个匹配词之前保留的音频秒数",
+        ),
+        "trim_tail_margin": Description(
+            en="Seconds of audio kept after the last matched word",
+            zh="最后一个匹配词之后保留的音频秒数",
+        ),
+        "trim_min_cut": Description(
+            en="Minimum seconds of garbage required before a cut is applied",
+            zh="进行裁剪所需的最小垃圾音频秒数",
+        ),
+    }
+
+
 class TTSConfig(I18nMixin):
     """Configuration for Text-to-Speech."""
 
@@ -706,6 +803,7 @@ class TTSConfig(I18nMixin):
         "elevenlabs_tts",
         "cartesia_tts",
         "piper_tts",
+        "jaitts_tts",
     ] = Field(..., alias="tts_model")
 
     azure_tts: Optional[AzureTTSConfig] = Field(None, alias="azure_tts")
@@ -730,6 +828,7 @@ class TTSConfig(I18nMixin):
     elevenlabs_tts: ElevenLabsTTSConfig | None = Field(None, alias="elevenlabs_tts")
     cartesia_tts: CartesiaTTSConfig | None = Field(None, alias="cartesia_tts")
     piper_tts: Optional[PiperTTSConfig] = Field(None, alias="piper_tts")
+    jaitts_tts: Optional[JaiTTSTTSConfig] = Field(None, alias="jaitts_tts")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "tts_model": Description(
@@ -773,6 +872,9 @@ class TTSConfig(I18nMixin):
             en="Configuration for Cartesia TTS", zh="Cartesia TTS 配置"
         ),
         "piper_tts": Description(en="Configuration for Piper TTS", zh="Piper TTS 配置"),
+        "jaitts_tts": Description(
+            en="Configuration for JaiTTS (F5-TTS Thai)", zh="JaiTTS（泰语 F5-TTS）配置"
+        ),
     }
 
     @model_validator(mode="after")
@@ -817,4 +919,6 @@ class TTSConfig(I18nMixin):
 
         elif tts_model == "piper_tts" and values.piper_tts is not None:
             values.piper_tts.model_validate(values.piper_tts.model_dump())
+        elif tts_model == "jaitts_tts" and values.jaitts_tts is not None:
+            values.jaitts_tts.model_validate(values.jaitts_tts.model_dump())
         return values

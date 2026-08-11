@@ -9,6 +9,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script type="module" crossorigin src="./assets/main-CKgUHFa9.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css?v=v30_hide_subtitle_force">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      .adv-field { display: flex; flex-direction: column; gap: 10px; padding: 8px 4px; }
+      .adv-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+      .adv-label-text { color: rgba(255,255,255,.82); font-size: 15px; font-weight: 500; }
+      .adv-desc { color: rgba(255,255,255,.45); font-size: 12px; }
+      .adv-switch { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; width: 42px; height: 24px; }
+      .adv-input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+      .adv-track { width: 42px; height: 24px; border-radius: 999px; background: #2d3748; transition: background .18s ease; position: relative; }
+      .adv-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #cbd5e0; transition: transform .18s ease, background .18s ease; }
+      .adv-input:checked + .adv-track { background: #3182ce; }
+      .adv-input:checked + .adv-track .adv-thumb { transform: translateX(18px); background: #fff; }
+    </style>
   </head>
 
   <body>
@@ -38,6 +51,335 @@
         observer.observe(document.body, { childList: true, subtree: true, characterData: true });
         setInterval(hideSubtitleBox, 100);
       });
+    </script>
+
+    <script>
+      (function () {
+        const PIN = '2938';
+        let bypass = false;
+
+        const GEAR_ICON_PATHS = ['M19.4 15a1.65', 'M12 15a3'];
+
+        function isGearButton(btn) {
+          const svg = btn.querySelector('svg');
+          if (!svg) return false;
+          const circle = svg.querySelector('circle');
+          if (!circle || (circle.getAttribute('r') || '') !== '3') return false;
+          const path = svg.querySelector('path');
+          if (!path) return false;
+          const d = path.getAttribute('d') || '';
+          return GEAR_ICON_PATHS.some(function (p) { return d.indexOf(p) === 0; }) ||
+                 (svg.getAttribute('viewBox') || '').indexOf('0 0 24 24') >= 0;
+        }
+
+        function askPin(btn) {
+          if (typeof Swal === 'undefined') {
+            var pin = window.prompt('กรอกรหัส PIN เพื่อเข้าถึง Settings');
+            if (pin === PIN) btn.click();
+            return;
+          }
+          Swal.fire({
+            title: '🔒 ล็อก Settings',
+            html: '<input id="pin-input" class="swal2-input" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" autocomplete="off">',
+            confirmButtonText: 'ยืนยัน',
+            cancelButtonText: 'ยกเลิก',
+            showCancelButton: true,
+            allowOutsideClick: false,
+            allowEscapeKey: true,
+            zIndex: 2147483646,
+            didOpen: function () {
+              var input = document.getElementById('pin-input');
+              if (input) input.focus();
+            },
+            preConfirm: function () {
+              var input = document.getElementById('pin-input');
+              var val = input ? input.value : '';
+              if (val !== PIN) {
+                Swal.showValidationMessage('PIN ไม่ถูกต้อง');
+                return false;
+              }
+              return true;
+            }
+          }).then(function (result) {
+            if (result.isConfirmed) {
+              bypass = true;
+              btn.click();
+            }
+            Swal.resetValidationMessage();
+          });
+        }
+
+        function lockAll() {
+          if (!document.body) return;
+          var candidates = document.querySelectorAll('button, [role="button"]');
+          for (var i = 0; i < candidates.length; i++) {
+            var btn = candidates[i];
+            if (btn.dataset.pinLocked === 'true') continue;
+            if (!isGearButton(btn)) continue;
+            btn.dataset.pinLocked = 'true';
+            console.log('[PIN] Settings button locked:', btn);
+            btn.addEventListener('click', function (e) {
+              if (bypass) { bypass = false; return; }
+              e.preventDefault();
+              e.stopPropagation();
+              e.stopImmediatePropagation();
+              askPin(this);
+            }, true);
+          }
+        }
+
+        var observer = new MutationObserver(lockAll);
+        document.addEventListener('DOMContentLoaded', function () {
+          lockAll();
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', lockAll);
+        } else {
+          lockAll();
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+
+    <script>
+      (function () {
+        var ADV_KEY = 'olv.settings.visionTools';
+
+        function visionRoots() {
+          return Array.from(document.querySelectorAll('[data-scope="tabs"][data-part="root"]')).filter(function (r) {
+            return r.querySelector('[data-part="trigger"][data-value="camera"]') !== null;
+          });
+        }
+
+        function applyVision() {
+          var on = localStorage.getItem(ADV_KEY) === 'on';
+          visionRoots().forEach(function (r) {
+            r.dataset.visionManaged = 'yes';
+            r.style.display = on ? '' : 'none';
+          });
+        }
+
+        function isSettingsTabsList(listEl) {
+          var triggers = listEl.querySelectorAll('[data-part="trigger"]');
+          for (var i = 0; i < triggers.length; i++) {
+            var t = (triggers[i].textContent || '').toLowerCase();
+            if (t.indexOf('live2d') >= 0 || t.indexOf('asr') >= 0 || t.indexOf('tts') >= 0) return true;
+          }
+          return false;
+        }
+
+        function buildToggle() {
+          var state = localStorage.getItem(ADV_KEY) === 'on';
+
+          var field = document.createElement('div');
+          field.className = 'adv-field';
+
+          var label = document.createElement('label');
+          label.className = 'adv-label';
+
+          var textBox = document.createElement('span');
+          textBox.className = 'adv-label-text';
+          textBox.textContent = 'Vision Tools';
+
+          var desc = document.createElement('span');
+          desc.className = 'adv-desc';
+          desc.textContent = 'เปิด/ปิด ฟีเจอร์ Vision Tools';
+
+          var switchEl = document.createElement('span');
+          switchEl.className = 'adv-switch';
+
+          var input = document.createElement('input');
+          input.type = 'checkbox';
+          input.id = 'tabs::r36:';
+          input.className = 'adv-input';
+          input.checked = state;
+
+          var track = document.createElement('span');
+          track.className = 'adv-track';
+          var thumb = document.createElement('span');
+          thumb.className = 'adv-thumb';
+          track.appendChild(thumb);
+
+          switchEl.appendChild(input);
+          switchEl.appendChild(track);
+          label.appendChild(textBox);
+          label.appendChild(switchEl);
+          field.appendChild(label);
+          field.appendChild(desc);
+
+          input.addEventListener('change', function () {
+            localStorage.setItem(ADV_KEY, input.checked ? 'on' : 'off');
+            applyVision();
+          });
+
+          return field;
+        }
+
+        function injectAdvancedTab(listEl) {
+          if (listEl.__advInjected) return;
+          listEl.__advInjected = true;
+
+          var root = listEl.parentElement;
+          if (!root || !isSettingsTabsList(listEl)) return;
+
+          var defaultTrigger = listEl.querySelector('[data-part="trigger"]');
+          var oldContent = root.querySelector('[data-part="content"]');
+          if (!defaultTrigger || !oldContent) return;
+
+          var advancedTrigger = defaultTrigger.cloneNode(true);
+          advancedTrigger.removeAttribute('id');
+          advancedTrigger.removeAttribute('data-selected');
+          advancedTrigger.removeAttribute('aria-selected');
+          advancedTrigger.setAttribute('data-value', 'advanced');
+          advancedTrigger.textContent = 'ขั้นสูง';
+
+          var content = oldContent.cloneNode(false);
+          for (var i = oldContent.attributes.length - 1; i >= 0; i--) {
+            var attrName = oldContent.attributes[i].name;
+            if (attrName === 'id' || attrName === 'data-value') continue;
+            content.setAttribute(attrName, oldContent.attributes[i].value);
+          }
+          content.removeAttribute('hidden');
+          content.removeAttribute('data-selected');
+          content.setAttribute('data-value', 'advanced');
+          content.style.display = 'none';
+          content.appendChild(buildToggle());
+
+          listEl.appendChild(advancedTrigger);
+          oldContent.after(content);
+
+          function showAdvanced() {
+            root.querySelectorAll('[data-part="content"]').forEach(function (c) {
+              c.style.display = 'none';
+            });
+            content.style.display = 'block';
+            content.setAttribute('data-selected', '');
+            content.removeAttribute('hidden');
+            listEl.querySelectorAll('[data-part="trigger"]').forEach(function (t) {
+              var sel = t.getAttribute('data-value') === 'advanced';
+              if (sel) {
+                t.setAttribute('aria-selected', 'true');
+                t.setAttribute('data-selected', '');
+              } else {
+                t.removeAttribute('aria-selected');
+                t.removeAttribute('data-selected');
+              }
+            });
+          }
+
+          advancedTrigger.addEventListener('click', function (e) {
+            e.stopPropagation();
+            showAdvanced();
+          });
+
+          listEl.addEventListener('click', function (e) {
+            var trig = e.target && e.target.closest ? e.target.closest('[data-part="trigger"]') : null;
+            if (trig && trig !== advancedTrigger) {
+              content.setAttribute('hidden', '');
+              content.removeAttribute('data-selected');
+              root.querySelectorAll('[data-part="content"]').forEach(function (c) {
+                c.style.display = '';
+              });
+            }
+          });
+        }
+
+        function tryInject() {
+          if (!document.body) return;
+          var lists = document.querySelectorAll('div[data-scope="tabs"][data-part="list"], [data-scope="tabs"][data-part="list"]');
+          for (var i = 0; i < lists.length; i++) injectAdvancedTab(lists[i]);
+        }
+
+        var observer = new MutationObserver(function () { tryInject(); applyVision(); });
+        document.addEventListener('DOMContentLoaded', function () {
+          tryInject();
+          applyVision();
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', tryInject);
+        } else {
+          tryInject();
+          applyVision();
+          observer.observe(document.body, { childList: true, subtree: true });
+        }
+      })();
+    </script>
+
+    <script>
+      (function () {
+        var POSES = {
+          idle: ['Idle', 0],
+          mtn_01: ['Idle', 0],
+          mtn_02: ['', 0],
+          mtn_03: ['', 1],
+          mtn_04: ['', 2],
+          special_01: ['', 3],
+          special_02: ['', 4],
+          special_03: ['', 5]
+        };
+
+        function findChatInput() {
+          return document.querySelector('textarea[placeholder="Type your message..."], textarea.chakra-textarea');
+        }
+
+        function playPose(name) {
+          try {
+            var adapter = window.getLAppAdapter ? window.getLAppAdapter() : null;
+            if (!adapter) return { ok: false, msg: 'Live2D adapter ยังไม่พร้อม' };
+            var model = adapter.getModel();
+            if (!model || typeof model.startMotion !== 'function') return { ok: false, msg: 'Live2D model ยังไม่โหลด' };
+            var spec = POSES[name];
+            if (!spec) return { ok: false, msg: 'ไม่รู้จักท่า: /pose ' + name };
+            var handle = model.startMotion(spec[0], spec[1], 3);
+            var bad = handle === null || handle === undefined || (typeof handle === 'number' && handle === 0);
+            if (bad) return { ok: false, msg: 'เล่นท่า ' + name + ' ไม่สำเร็จ' };
+            return { ok: true, msg: 'กำลังเล่นท่า ' + name + ' 🎬' };
+          } catch (e) {
+            return { ok: false, msg: 'error: ' + e.message };
+          }
+        }
+
+        function toast(msg, icon) {
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({ html: msg, toast: true, position: 'top-end', timer: 1800, showConfirmButton: false, icon: icon || 'info', zIndex: 2147483646 });
+          }
+        }
+
+        function clearInput(ta) {
+          try {
+            var proto = ta.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+            Object.getOwnPropertyDescriptor(proto, 'value').set.call(ta, '');
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
+          } catch (e) {
+            ta.value = '';
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' || e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+          var ta = findChatInput();
+          if (!ta || e.target !== ta) return;
+          var raw = (ta.value || '');
+          if (!raw.trim().toLowerCase().startsWith('/pose')) return;
+
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          var parts = raw.trim().split(/\s+/);
+          var name = (parts[1] || '').toLowerCase();
+          clearInput(ta);
+
+          if (!name || name === 'list' || name === 'help') {
+            toast('ท่าที่ใช้ได้: ' + Object.keys(POSES).join(', '), 'info');
+            return;
+          }
+          var res = playPose(name);
+          toast(res.msg, res.ok ? 'success' : 'error');
+        }, true);
+      })();
     </script>
   </body>
 </html>

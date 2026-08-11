@@ -215,6 +215,25 @@ class TTSFactory:
                 normalize_audio=kwargs.get("normalize_audio"),
                 use_cuda=kwargs.get("use_cuda"),
             )
+        elif engine_type == "jaitts_tts":
+            from .jaitts_tts import TTSEngine as JaiTTSTTSEngine
+
+            return JaiTTSTTSEngine(
+                api_url=kwargs.get("api_url", "http://127.0.0.1:8021/synthesize"),
+                ref_audio_path=kwargs.get("ref_audio_path", ""),
+                ref_text=kwargs.get("ref_text", ""),
+                speed=kwargs.get("speed", 1.0),
+                seed=kwargs.get("seed", -1),
+                timeout=kwargs.get("timeout", 300.0),
+                trim_audio=kwargs.get("trim_audio", True),
+                trim_model=kwargs.get("trim_model", "small"),
+                trim_device=kwargs.get("trim_device", "cpu"),
+                trim_compute_type=kwargs.get("trim_compute_type", "int8"),
+                trim_download_root=kwargs.get("trim_download_root", "models/whisper"),
+                trim_headroom=kwargs.get("trim_headroom", 0.10),
+                trim_tail_margin=kwargs.get("trim_tail_margin", 0.15),
+                trim_min_cut=kwargs.get("trim_min_cut", 0.30),
+            )
         else:
             raise ValueError(f"Unknown TTS engine type: {engine_type}")
 

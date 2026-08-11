@@ -1,17 +1,23 @@
 import os
 import sys
+import time
 import atexit
 import asyncio
 import argparse
 import subprocess
 from pathlib import Path
 import tomli
+import urllib.parse
+import urllib.request
 import uvicorn
 from loguru import logger
 from upgrade_codes.upgrade_manager import UpgradeManager
 
 from src.open_llm_vtuber.server import WebSocketServer
 from src.open_llm_vtuber.config_manager import Config, read_yaml, validate_config
+
+# Keeps the auto-started JaiTTS server process handle so it can be stopped on exit.
+_jaitss_proc = None
 
 os.environ["HF_HOME"] = str(Path(__file__).parent / "models")
 os.environ["MODELSCOPE_CACHE"] = str(Path(__file__).parent / "models")
@@ -22,6 +28,7 @@ if venv_scripts not in os.environ.get("PATH", ""):
     os.environ["PATH"] = venv_scripts + os.pathsep + os.environ.get("PATH", "")
 
 import pydub
+
 ffmpeg_exe = Path(venv_scripts) / "ffmpeg.exe"
 if ffmpeg_exe.exists():
     pydub.AudioSegment.converter = str(ffmpeg_exe)
@@ -33,6 +40,131 @@ def get_version() -> str:
     with open("pyproject.toml", "rb") as f:
         pyproject = tomli.load(f)
     return pyproject["project"]["version"]
+
+
+def _url_base(url: str) -> str:
+    """Return scheme://netloc for a URL (used to derive a base for /health)."""
+    parts = urllib.parse.urlsplit(url)
+    return urllib.parse.urlunsplit((parts.scheme, parts.netloc, "", "", ""))
+
+
+def _health_ok(url: str, timeout: float = 2.0) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return resp.status == 200
+    except BaseException:
+        return False
+
+
+def ensure_jaitts_server(config: Config) -> None:
+    """Auto-start the local JaiTTS server when jaitts_tts is selected.
+
+    Uses the jaitts_modal project's own CUDA venv (a separate Python env).
+    The server dir is taken from `server_dir`, or derived from the parent of
+    `ref_audio_path`. Skips silently if the server is already healthy.
+    """
+    global _jaitss_proc
+    try:
+        tts = config.character_config.tts_config
+        if tts.tts_model != "jaitts_tts":
+            return
+        jcfg = tts.jaitts_tts
+        if jcfg is None or not getattr(jcfg, "auto_start", True):
+            return
+    except Exception as e:
+        logger.warning(f"JaiTTS auto-start skipped (config): {e}")
+        return
+
+    health_url = _url_base(jcfg.api_url) + "/health"
+    if _health_ok(health_url):
+        logger.info("JaiTTS server already running - skipping auto-start.")
+        return
+
+    server_dir = Path(jcfg.server_dir).expanduser() if jcfg.server_dir else Path("")
+    if not server_dir.is_dir():
+        ref_parent = Path(jcfg.ref_audio_path).expanduser().parent
+        for candidate in (ref_parent, ref_parent / "jaitts_modal"):
+            if (candidate / "server_local.py").exists():
+                server_dir = candidate
+                break
+    venv_python = server_dir / ".venv" / "Scripts" / "python.exe"
+    server_script = server_dir / "server_local.py"
+
+    if (
+        not server_dir.is_dir()
+        or not venv_python.is_file()
+        or not server_script.is_file()
+    ):
+        logger.error(
+            f"Cannot auto-start JaiTTS: server_dir='{server_dir}' has no "
+            f"server_local.py / .venv\\Scripts\\python.exe. "
+            f"Set 'server_dir' in conf.yaml (jaitts_tts) or start it manually."
+        )
+        return
+
+    logger.info(
+        f"Auto-starting JaiTTS server (CUDA venv) from {server_dir} ... "
+        f"(first load may take a while)"
+    )
+    log_dir = Path(__file__).parent / "logs"
+    log_dir.mkdir(exist_ok=True)
+    jaitts_log = open(log_dir / "jaitts_server.log", "a", encoding="utf-8", buffering=1)
+    creationflags = 0
+    if os.name == "nt":
+        creationflags = (
+            subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW
+        )
+    # JaiTTS server must use the default HF cache (model already lives there),
+    # NOT the workspace HF_HOME override inherited from run_server.py.
+    child_env = os.environ.copy()
+    child_env.pop("HF_HOME", None)
+    child_env.pop("HF_HUB_CACHE", None)
+    child_env.pop("MODELSCOPE_CACHE", None)
+    try:
+        _jaitss_proc = subprocess.Popen(
+            [str(venv_python), "-X", "utf8", str(server_script)],
+            cwd=str(server_dir),
+            env=child_env,
+            stdout=jaitts_log,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            creationflags=creationflags,
+            start_new_session=(os.name != "nt"),
+        )
+    except Exception as e:
+        jaitts_log.close()
+        logger.error(f"Failed to spawn JaiTTS server: {e}")
+        return
+
+    deadline = time.monotonic() + jcfg.server_startup_timeout
+    while time.monotonic() < deadline:
+        if _jaitss_proc.poll() is not None:
+            logger.error(
+                f"JaiTTS server exited early with code {_jaitss_proc.returncode}."
+            )
+            _jaitss_proc = None
+            return
+        if _health_ok(health_url):
+            logger.info("JaiTTS server is ready (CUDA voice clone active).")
+            return
+        time.sleep(2)
+
+    logger.warning(
+        "JaiTTS server did not become ready in time. "
+        "TTS requests may fail until it comes up."
+    )
+
+
+def stop_jaitts_server() -> None:
+    global _jaitss_proc
+    if _jaitss_proc is not None and _jaitss_proc.poll() is None:
+        logger.info("Stopping auto-started JaiTTS server ...")
+        _jaitss_proc.terminate()
+        try:
+            _jaitss_proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            _jaitss_proc.kill()
+        _jaitss_proc = None
 
 
 def init_logger(console_log_level: str = "INFO") -> None:
@@ -148,6 +280,26 @@ def run(console_log_level: str):
     # Load configurations from yaml file
     config: Config = validate_config(read_yaml("conf.yaml"))
     server_config = config.system_config
+
+    # Start the local JaiTTS server if jaitts_tts is selected (CUDA voice clone)
+    atexit.register(stop_jaitts_server)
+    ensure_jaitts_server(config)
+
+    # Build the file knowledge base (RAG) index from the configured folder
+    try:
+        from src.open_llm_vtuber.knowledge.knowledge_base import KnowledgeBase
+        from src.open_llm_vtuber.knowledge.base import set_knowledge_base
+
+        kcfg = config.character_config.knowledge_config
+        if kcfg is not None and kcfg.enabled:
+            kb = KnowledgeBase(kcfg)
+            kb.build_index()
+        else:
+            kb = None
+        set_knowledge_base(kb)
+    except Exception as e:
+        logger.error(f"Knowledge base initialization failed: {e}")
+        set_knowledge_base(None)
 
     if server_config.enable_proxy:
         logger.info("Proxy mode enabled - /proxy-ws endpoint will be available")

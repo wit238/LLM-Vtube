@@ -464,6 +464,14 @@ class ServiceContext:
 
             persona_prompt += prompt_content
 
+        kcfg = getattr(self.character_config, "knowledge_config", None)
+        if kcfg is not None and getattr(kcfg, "enabled", False):
+            persona_prompt += (
+                "\n\nเมื่อผู้ใช้ส่ง 'ข้อมูลอ้างอิงจากเอกสาร' ในข้อความ "
+                "ให้ใช้ข้อมูลนั้นในการตอบอย่างถูกต้องโดยไม่เติมแต่งข้อมูล "
+                "ถ้าคำถามไม่อยู่ในเอกสารอ้างอิง ให้ตอบตามความจริงว่าข้อมูลนั้นไม่มีในคลัง"
+            )
+
         logger.debug("\n === System Prompt ===")
         logger.debug(persona_prompt)
 

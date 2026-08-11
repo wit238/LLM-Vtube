@@ -98,6 +98,7 @@ def remove_special_characters(text: str) -> str:
             category.startswith("L")
             or category.startswith("N")
             or category.startswith("P")
+            or category.startswith("M")  # combining marks (Thai vowels / tone marks)
             or char.isspace()
         )
 

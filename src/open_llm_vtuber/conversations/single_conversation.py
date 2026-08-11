@@ -20,6 +20,7 @@ from ..service_context import ServiceContext
 
 import os
 from ..utils.stream_audio import prepare_audio_payload
+
 # Import necessary types from agent outputs
 from ..agent.output_types import SentenceOutput, AudioOutput, DisplayText
 from .faq_handler import match_faq
@@ -70,6 +71,25 @@ async def process_single_conversation(
             metadata=metadata,
         )
 
+        # Retrieve relevant knowledge (RAG) and attach to the batch input so
+        # the agent can ground its answer in the indexed markdown files.
+        try:
+            from ..knowledge.base import get_knowledge_base
+
+            kb = get_knowledge_base()
+            if kb is not None and kb.is_ready():
+                hits = kb.retrieve(input_text)
+                if hits:
+                    if batch_input.metadata is None:
+                        batch_input.metadata = {}
+                    knowledge_context = "\n\n".join(h["text"] for h in hits)
+                    batch_input.metadata["knowledge_context"] = (
+                        "ข้อมูลอ้างอิงจากเอกสาร (ให้ใช้ข้อมูลนี้ตอบคำถาม "
+                        "ถ้าคำถามไม่อยู่ในข้อมูลให้บอกว่าไม่รู้):\n\n" + knowledge_context
+                    )
+        except Exception as e:
+            logger.error(f"Knowledge retrieval failed: {e}")
+
         # Store user message (check if we should skip storing to history)
         skip_history = metadata and metadata.get("skip_history", False)
         if context.history_uid and not skip_history:
@@ -89,8 +109,13 @@ async def process_single_conversation(
             logger.info(f"With {len(images)} images")
 
         # Check if user input matches any FAQ question for instant, pre-rendered answer & clear voice
+        faq_enabled = getattr(context.character_config, "faq_enabled", False)
         faq_threshold = getattr(context.character_config, "faq_threshold_percent", 60.0)
-        faq_match = match_faq(input_text, similarity_threshold_percent=faq_threshold)
+        faq_match = (
+            match_faq(input_text, similarity_threshold_percent=faq_threshold)
+            if faq_enabled
+            else None
+        )
         if faq_match and not metadata:
             logger.info(f"🎯 FAQ Match found: {faq_match['id']}")
             answer_text = faq_match["answer"]

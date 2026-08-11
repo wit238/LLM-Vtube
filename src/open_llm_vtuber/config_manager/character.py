@@ -1,11 +1,12 @@
 # config_manager/character.py
-from pydantic import Field, field_validator
-from typing import Dict, ClassVar
+from pydantic import Field, field_validator, ConfigDict
+from typing import Dict, ClassVar, Optional
 from .i18n import I18nMixin, Description
 from .asr import ASRConfig
 from .tts import TTSConfig
 from .vad import VADConfig
 from .tts_preprocessor import TTSPreprocessorConfig
+from .knowledge import KnowledgeConfig
 
 from .agent import AgentConfig
 
@@ -13,12 +14,15 @@ from .agent import AgentConfig
 class CharacterConfig(I18nMixin):
     """Character configuration settings."""
 
+    model_config = ConfigDict(extra="allow")
+
     conf_name: str = Field(..., alias="conf_name")
     conf_uid: str = Field(..., alias="conf_uid")
     live2d_model_name: str = Field(..., alias="live2d_model_name")
     character_name: str = Field(default="", alias="character_name")
     human_name: str = Field(default="Human", alias="human_name")
     faq_threshold_percent: float = Field(default=60.0, alias="faq_threshold_percent")
+    faq_enabled: bool = Field(default=False, alias="faq_enabled")
     avatar: str = Field(default="", alias="avatar")
     persona_prompt: str = Field(..., alias="persona_prompt")
     agent_config: AgentConfig = Field(..., alias="agent_config")
@@ -28,6 +32,7 @@ class CharacterConfig(I18nMixin):
     tts_preprocessor_config: TTSPreprocessorConfig = Field(
         ..., alias="tts_preprocessor_config"
     )
+    knowledge_config: Optional[KnowledgeConfig] = Field(None, alias="knowledge_config")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "conf_name": Description(
@@ -67,6 +72,14 @@ class CharacterConfig(I18nMixin):
         ),
         "avatar": Description(
             en="Avatar image path for the character", zh="角色头像图片路径"
+        ),
+        "faq_enabled": Description(
+            en="Enable instant pre-rendered FAQ answers (default off). When off, all questions go to the real LLM/agent.",
+            zh="启用即时预渲染的 FAQ 回答（默认关闭）。关闭时所有问题都交给真实的 LLM/代理。",
+        ),
+        "knowledge_config": Description(
+            en="File knowledge (RAG) settings: index markdown files dropped in a folder and retrieve them when answering",
+            zh="文件知识库（RAG）设置：索引放在文件夹中的 Markdown 文件，并在回答时检索",
         ),
     }
 
