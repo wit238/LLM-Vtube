@@ -3227,7 +3227,7 @@ wheels = [
 [[package]]
 name = "open-llm-vtuber"
 version = "1.2.1"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
     { name = "azure-cognitiveservices-speech" },
