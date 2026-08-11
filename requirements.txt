@@ -16,6 +16,8 @@ elevenlabs==2.31.0
     # via open-llm-vtuber (pyproject.toml)
 fastapi==0.128.0
     # via open-llm-vtuber (pyproject.toml)
+faster-whisper==1.2.1
+    # via open-llm-vtuber (pyproject.toml)
 groq==1.0.0
     # via open-llm-vtuber (pyproject.toml)
 httpx==0.28.1
