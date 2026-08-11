@@ -264,6 +264,18 @@ class WebSocketHandler:
         self, send_text: Callable, client_uid: str
     ) -> ServiceContext:
         """Initialize service context for a new session by cloning the default context"""
+        # The default context is loaded asynchronously after the HTTP server is
+        # up. Wait a short while for it; if it still isn't ready, fail cleanly
+        # instead of crashing on None attributes.
+        for _ in range(60):
+            if self.default_context_cache.config is not None:
+                break
+            await asyncio.sleep(0.5)
+        if self.default_context_cache.config is None:
+            raise RuntimeError(
+                "Server is still initializing (service context not loaded yet). "
+                "Please reconnect in a few seconds."
+            )
         session_service_context = ServiceContext()
         await session_service_context.load_cache(
             config=self.default_context_cache.config.model_copy(deep=True),

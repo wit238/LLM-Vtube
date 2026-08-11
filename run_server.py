@@ -5,6 +5,7 @@ import atexit
 import asyncio
 import argparse
 import subprocess
+import threading
 from pathlib import Path
 import tomli
 import urllib.parse
@@ -283,40 +284,51 @@ def run(console_log_level: str):
 
     # Start the local JaiTTS server if jaitts_tts is selected (CUDA voice clone)
     atexit.register(stop_jaitts_server)
-    ensure_jaitts_server(config)
 
-    # Build the file knowledge base (RAG) index from the configured folder
-    try:
-        from src.open_llm_vtuber.knowledge.knowledge_base import KnowledgeBase
-        from src.open_llm_vtuber.knowledge.base import set_knowledge_base
-
-        kcfg = config.character_config.knowledge_config
-        if kcfg is not None and kcfg.enabled:
-            kb = KnowledgeBase(kcfg)
-            kb.build_index()
-        else:
-            kb = None
-        set_knowledge_base(kb)
-    except Exception as e:
-        logger.error(f"Knowledge base initialization failed: {e}")
-        set_knowledge_base(None)
+    # Initialize the WebSocket server (synchronous part). The constructor
+    # mounts all routes/static assets, so the app can answer HTTP requests
+    # (e.g. the Railway healthcheck on "/") before heavy init finishes.
+    server = WebSocketServer(config=config)
 
     if server_config.enable_proxy:
         logger.info("Proxy mode enabled - /proxy-ws endpoint will be available")
 
-    # Initialize the WebSocket server (synchronous part)
-    server = WebSocketServer(config=config)
+    def _background_init() -> None:
+        """Load slow components (JaiTTS, RAG index, service context) after the
+        HTTP server is already listening, so the healthcheck passes early."""
+        try:
+            ensure_jaitts_server(config)
+        except Exception as e:
+            logger.error(f"JaiTTS auto-start failed: {e}")
 
-    # Perform asynchronous initialization (loading context, etc.)
-    logger.info("Initializing server context...")
-    try:
-        asyncio.run(server.initialize())
-        logger.info("Server context initialized successfully.")
-    except Exception as e:
-        logger.error(f"Failed to initialize server context: {e}")
-        sys.exit(1)  # Exit if initialization fails
+        # Build the file knowledge base (RAG) index from the configured folder
+        try:
+            from src.open_llm_vtuber.knowledge.knowledge_base import KnowledgeBase
+            from src.open_llm_vtuber.knowledge.base import set_knowledge_base
 
-    # Run the Uvicorn server
+            kcfg = config.character_config.knowledge_config
+            if kcfg is not None and kcfg.enabled:
+                kb = KnowledgeBase(kcfg)
+                kb.build_index()
+            else:
+                kb = None
+            set_knowledge_base(kb)
+        except Exception as e:
+            logger.error(f"Knowledge base initialization failed: {e}")
+            set_knowledge_base(None)
+
+        # Perform asynchronous initialization (loading context, etc.)
+        logger.info("Initializing server context...")
+        try:
+            asyncio.run(server.initialize())
+            logger.info("Server context initialized successfully.")
+        except Exception as e:
+            logger.error(f"Failed to initialize server context: {e}")
+            setattr(server, "_init_error", e)
+
+    threading.Thread(target=_background_init, daemon=True).start()
+
+    # Run the Uvicorn server (binds the port immediately; heavy init runs in background)
     port = int(os.environ.get("PORT", server_config.port))
     host = os.environ.get("HOST", "0.0.0.0")
     logger.info(f"Starting server on {host}:{port}")
