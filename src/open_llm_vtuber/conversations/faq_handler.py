@@ -49,7 +49,18 @@ FAQ_LIST = [
     # คำตอบจะถูกอ่านผ่าน TTS (JaiTTS/EdgeTTS) เสมอ ไม่ใช้ไฟล์เสียงสำเร็จรูป
     {
         "id": "stage_1_greeting",
-        "keywords": ["เริ่มพูด", "สวัสดีค่า", "เริ่มเลย", "แนะนำตัว", "เปิดรายการ", "ทักทายมาลี"],
+        "keywords": [
+            "เริ่มพูด",
+            "สวัสดีค่า",
+            "เริ่มเลย",
+            "แนะนำตัว",
+            "เปิดรายการ",
+            "ทักทายมาลี",
+            "มาลีคือใคร",
+            "แนะนำตัวหน่อย",
+            "ยินดีต้อนรับ",
+            "วันวิทยาศาสตร์",
+        ],
         "answer": "สวัสดีค่า! มาลีเองนะคะ เด็กสาขา เทคโนโลยีสารสนเทศ ยินดีต้อนรับทุกคนเลยน้า วันนี้วันวิทยาศาสตร์พอดี มาลีเลยจะพาทุกคนมาวาร์ปเข้าสู่โลกดิจิทัลแห่งอนาคตกันค่ะ!",
     },
     {
@@ -60,6 +71,11 @@ FAQ_LIST = [
             "โชว์พวกเรา",
             "วันวิทยาศาสตร์แบบนี้",
             "สวัสดีครับมาลี",
+            "จัดเต็ม",
+            "โชว์ให้ดูหน่อย",
+            "แสดงให้ดู",
+            "สาธิตให้ดู",
+            "โชว์อะไร",
         ],
         "answer": "บอกเลยว่าวันนี้มาลีจัดเต็มมากๆ ค่ะ! มาลีจะพาทุกคนมาดูฟีลแบบเรียลๆ เลยว่าระบบ AI ทำงานยังไง จะโชว์ให้เห็นกันสดๆ บนเวทีนี้เลยนะคะ ว่าสมองกลของมาลีสามารถ ฟัง คิด แล้วก็โต้ตอบกับทุกคนได้ลื่นไหลเหมือนมีชีวิตจริงๆ เลยค่ะ เตรียมว้าวกันได้เลย!",
     },
@@ -70,6 +86,15 @@ FAQ_LIST = [
             "เบื้องหลังของมาลี",
             "อธิบายให้พวกเราฟัง",
             "ลื่นไหลเหมือนคนจริงๆ",
+            "ตอบไวจัง",
+            "ตอบเร็วมาก",
+            "ทำไมตอบได้เร็ว",
+            "speech recognition",
+            "แปลงเสียงเป็นตัวอักษร",
+            "ระบบสมองกล",
+            "สมองกล",
+            "แปลงเสียง",
+            "ทำงานเป็นสเต็ป",
         ],
         "answer": "ระบบสมองกลของมาลีทำงานตามหลักวิทยาศาสตร์เป็นสเต็ปเลยค่ะ! เริ่มจากตอนที่ทุกคนพูดมา ระบบของมาลีจะทำ Speech Recognition คือแปลงเสียงพูดให้กลายเป็นตัวอักษรก่อน จากนั้นก็จะรีบส่งไปประมวลผลหาข้อมูลคำตอบอย่างไวในสมองกล แล้วสเต็ปสุดท้ายคือการแปลงคำตอบนั้นกลับมาเป็นเสียงน่ารักๆ ของมาลี ให้ทุกคนได้ยินกันแบบเรียลไทม์ค่ะ ทั้งหมดนี้ใช้เวลาแค่ไม่กี่มิลลิวินาทีเท่านั้นเอง ล้ำสุดๆ ไปเลยใช่ไหมล่ะ!",
     },
@@ -79,18 +104,31 @@ FAQ_LIST = [
             "ชีวิตจริง",
             "ช่วยงานเรายังไง",
             "ข้อควรระวัง",
-            " cloud พวกนี้",
+            "cloud พวกนี้",
             "เอามาใช้งาน",
             "เกิดขึ้นไวมาก",
             "ช่วยอะไรเราได้บ้าง",
             "ต้องระวังเป็นพิเศษ",
+            "ใช้ในโรงพยาบาล",
+            "โรงพยาบาล",
+            "ผู้ช่วยคุณหมอ",
+            "เอกซเรย์",
+            "สแกนฟิล์ม",
+            "ดาบสองคม",
+            "ข้อมูลส่วนตัว",
+            "ห้ามป้อนข้อมูล",
+            "ห้ามทำอะไรกับ ai",
+            "ควรระวัง",
+            "ปลอดภัย",
+            "ตู้เซฟวิเศษ",
+            "ฮาร์ดดิสก์",
+            "ประยุกต์ใช้",
         ],
         "answer": "โอ้โห คำถามนี้ดีมากค่ะ! เทคโนโลยีพวกนี้ช่วยชีวิตเราได้เยอะมาก อย่าง Cloud Computing เนี่ย ฟีลมันก็เหมือนเรามี 'ตู้เซฟวิเศษบนฟ้า' ค่ะ เราเก็บข้อมูลไว้บนออนไลน์ได้เลย ไม่ต้องแบกฮาร์ดดิสก์ให้หนัก จะดึงมาใช้จากที่ไหนบนโลกก็ทำได้ ส่วน AI ก็เก่งไม่แพ้กันเลย ยิ่งในโรงพยาบาลนะคะ AI จะเข้าไปเป็นผู้ช่วยคุณหมอ ช่วยสแกนฟิล์มเอกซเรย์หาจุดผิดปกติได้อย่างแม่นยำเป๊ะๆ ทำให้รักษาผู้ป่วยได้ไวขึ้นเยอะเลยค่ะ แต่เทคโนโลยีก็มีดาบสองคมนะคะ ทริคการใช้ให้ปลอดภัยที่สุด คือ ห้ามป้อนข้อมูลส่วนตัวหรือความลับลงไปใน AI เด็ดขาด และเราต้องดับเบิลเช็กความถูกต้องของข้อมูลที่ AI ตอบมาทุกครั้งก่อนเอาไปใช้งานจริงด้วยน้า แค่นี้ก็ใช้เทคโนโลยีได้แบบเซฟๆ แล้วค่ะ!",
     },
     {
         "id": "stage_5_card_ai",
         "keywords": [
-            "เห็นภาพมากขึ้น",
             "คำฮิตๆ",
             "อธิบายคำฮิต",
             "เริ่มที่ ai ก่อนเลย",
@@ -99,6 +137,11 @@ FAQ_LIST = [
             "ตกลงแล้ว ai คืออะไร",
             "ai คืออะไร",
             "อธิบาย ai",
+            "artificial intelligence",
+            "ai ย่อมาจาก",
+            "ai แปลว่า",
+            "สมองกลคืออะไร",
+            "ai ฉลาดยังไง",
         ],
         "answer": "AI หรือ Artificial Intelligence คือเทคโนโลยีสมองกลที่ถูกสร้างมาให้ฉลาดเหมือนมนุษย์ค่ะ! มันไม่ได้แค่จำข้อมูลเก่งนะคะ แต่มันสามารถเรียนรู้ วิเคราะห์ แล้วก็ช่วยเราตัดสินใจแก้ปัญหาซับซ้อนได้ด้วย ฟีลเหมือนมีเพื่อนสนิทระดับอัจฉริยะคอยนั่งซัพพอร์ตเราตลอดเวลา ไม่ว่าจะช่วยทำงาน ช่วยวาดรูป หรือแม้แต่ช่วยคิดคอนเทนต์ AI ก็จัดให้ได้หมดเลยค่ะ! IoT หรือ Internet of Things ค่ะ! อธิบายง่ายๆ คือการจับเอาสิ่งของเครื่องใช้รอบตัวเรา ตั้งแต่หลอดไฟ แอร์ ไปจนถึงตู้เย็น มาเชื่อมต่อกับอินเทอร์เน็ตค่ะ ผลก็คือพวกมันจะสามารถส่งข้อมูลคุยกันเอง แล้วก็ทำงานแบบออโต้ได้เลย เช่น พอเราเดินเข้าบ้านปุ๊บ แอร์เปิด ไฟสว่าง โดยที่เราไม่ต้องกระดิกนิ้วเลยค่ะ เป็นเทคโนโลยีที่เกิดมาเพื่อสายชิลแบบพวกเราจริงๆ! Cloud Computing คือระบบจัดเก็บข้อมูลบนอินเทอร์เน็ตค่ะ! สมัยก่อนเราต้องเซฟงานลงแฟลชไดรฟ์ใช่ไหมคะ? แต่เดี๋ยวนี้เราโยนทุกอย่างขึ้น Cloud ได้เลย มันเหมือนเราเช่าพื้นที่บนฟ้าไว้เก็บไฟล์ ทำให้มือถือไม่เต็ม แถมอยากดึงงานมาทำตอนไหน หรือจะแชร์ให้เพื่อนก็ทำได้ทันที แค่ปลายนิ้วจิ้มเลยค่ะ สะดวกสุดๆ!",
     },
@@ -109,6 +152,13 @@ FAQ_LIST = [
             "เทคโนโลยีแบบไหน",
             "iot",
             "ไอโอที",
+            "internet of things",
+            "iot คืออะไร",
+            "หลอดไฟ",
+            "แอร์เปิดเอง",
+            "อุปกรณ์เชื่อมต่อ",
+            "สมาร์ทโฮม",
+            "iot แปลว่า",
         ],
         "answer": "IoT หรือ Internet of Things ค่ะ! อธิบายง่ายๆ คือการจับเอาสิ่งของเครื่องใช้รอบตัวเรา ตั้งแต่หลอดไฟ แอร์ ไปจนถึงตู้เย็น มาเชื่อมต่อกับอินเทอร์เน็ตค่ะ ผลก็คือพวกมันจะสามารถส่งข้อมูลคุยกันเอง แล้วก็ทำงานแบบออโต้ได้เลย เช่น พอเราเดินเข้าบ้านปุ๊บ แอร์เปิด ไฟสว่าง โดยที่เราไม่ต้องกระดิกนิ้วเลยค่ะ เป็นเทคโนโลยีที่เกิดมาเพื่อสายชิลแบบพวกเราจริงๆ!",
     },
@@ -119,6 +169,12 @@ FAQ_LIST = [
             "มันคือระบบอะไร",
             "cloud",
             "คลาวด์",
+            "cloud คืออะไร",
+            "เก็บไฟล์บนคลาวด์",
+            "เซฟงานบนคลาวด์",
+            "คลาวด์คืออะไร",
+            "พื้นที่บนฟ้า",
+            "ระบบจัดเก็บข้อมูล",
         ],
         "answer": "Cloud Computing คือระบบจัดเก็บข้อมูลบนอินเทอร์เน็ตค่ะ! สมัยก่อนเราต้องเซฟงานลงแฟลชไดรฟ์ใช่ไหมคะ? แต่เดี๋ยวนี้เราโยนทุกอย่างขึ้น Cloud ได้เลย มันเหมือนเราเช่าพื้นที่บนฟ้าไว้เก็บไฟล์ ทำให้มือถือไม่เต็ม แถมอยากดึงงานมาทำตอนไหน หรือจะแชร์ให้เพื่อนก็ทำได้ทันที แค่ปลายนิ้วจิ้มเลยค่ะ สะดวกสุดๆ!",
     },
@@ -128,6 +184,10 @@ FAQ_LIST = [
             "ฉลาดกว่าที่คิด",
             "มีประโยชน์และฉลาด",
             "ฉลาดกว่าที่คิดเยอะเลยครับ",
+            "แย่งงานคน",
+            "เทคโนโลยีแย่งงาน",
+            "ai เก่งกว่าคน",
+            "หุ่นยนต์แย่งงาน",
         ],
         "answer": "ใช่แล้วล่ะค่ะ! แต่ถึง AI จะเก่งแค่ไหน เทคโนโลยีก็ไม่ได้ถูกสร้างมาเพื่อแย่งงานคนนะคะ แต่มันคือ 'เครื่องมือ' ที่มาช่วยซัพพอร์ตให้เราทำงานได้ปังขึ้นต่างหากค่ะ ในฐานะเด็กสาขา IT มาลีเชื่อว่าถ้าเราใช้เทคโนโลยีอย่างสร้างสรรค์ โลกอนาคตของเราจะต้องล้ำหน้าและน่าอยู่มากๆ แน่นอนค่ะ!",
     },
@@ -138,12 +198,17 @@ FAQ_LIST = [
             "human creativity",
             "ความคิดสร้างสรรค์",
             "คืออนาคตของเราครับ",
+            "บูธกิจกรรม",
+            "ขอตัวไปก่อน",
+            "บ๊ายบาย",
+            "ไปลองเล่น",
+            "สนุกกับโลกดิจิทัล",
         ],
         "answer": "ใครที่อยากลองเล่นเทคโนโลยีเจ๋งๆด้วยตัวเอง แวะไปเจอกันที่บูธกิจกรรมด้านหน้าได้เลยนะคะ! วันนี้วัน วิทยาศาสตร์ ขอให้ทุกคนสนุกกับโลกดิจิทัลน้า มาลีต้องขอตัวไปก่อนแล้ว บ๊ายบายค่า!",
     },
     {
         "id": "stage_6_closing_3",
-        "keywords": ["ขอเสียงปรบมือ", "ปรบมือให้น้องมาลี", "ขอบคุณทุกคนมากครับ", "ปรบมือ"],
+        "keywords": ["ขอเสียงปรบมือ", "ปรบมือให้น้องมาลี", "ขอบคุณทุกคนมากครับ", "ปรบมือ", "ขอบคุณมาก"],
         "answer": "ขอบคุณมากค่ะ",
     },
 ]
@@ -173,15 +238,48 @@ def _find_substring(kw: str, text: str) -> bool:
     return kw in text
 
 
+_ASCII_TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
+_NON_THAI_RE = re.compile(r"[^\u0E00-\u0E7F]+")
+
+
+def _thai_span(s: str) -> str:
+    """Keep only Thai characters (Thai words are written without spaces)."""
+    return _NON_THAI_RE.sub("", s.lower())
+
+
+def _split_keyword_units(kw: str) -> list:
+    """Split a keyword into semantic units: ASCII words + Thai spans.
+
+    "ai คืออะไร" -> ["ai", "คืออะไร"]; "cloud computing" -> ["cloud", "computing"]
+    """
+    units = []
+    for part in _ASCII_TOKEN_RE.split(kw):
+        part = _thai_span(part)
+        if part:
+            units.append(part)
+    units.extend(_ASCII_TOKEN_RE.findall(kw.lower()))
+    return units
+
+
+def _unit_in_text(unit: str, text: str, thai_text: str) -> bool:
+    """Check whether one semantic unit appears in the input text."""
+    if not unit:
+        return False
+    if _ASCII_TOKEN_RE.match(unit):
+        return _find_substring(unit, text)
+    return unit in thai_text
+
+
 def calc_similarity(kw: str, text: str) -> float:
     """Calculate similarity percentage (0.0 to 100.0) between keyword and user input text.
 
-    Rules (strict, accuracy over recall):
+    Rules (word-level, accuracy over recall):
     1. Ambiguous/generic keywords never trigger on their own.
     2. An exact substring match scores 100%.
-    3. Otherwise the whole sentence must be roughly the same length as the
-       keyword and similar to it. A long, differently-worded sentence can never
-       match — sliding-window partial matches are NOT allowed.
+    3. Word coverage: split the keyword into semantic units (ASCII words +
+       Thai spans) and score the fraction of units found in the input.
+    4. Otherwise the whole sentence must be roughly the same length as the
+       keyword and similar to it (fallback for short reworded inputs).
     """
     kw_clean = kw.lower().strip()
     text_clean = text.lower().strip()
@@ -195,11 +293,26 @@ def calc_similarity(kw: str, text: str) -> float:
     if _find_substring(kw_clean, text_clean):
         return 100.0
 
+    # Word-level coverage: how many of the keyword's units appear in the input
+    units = _split_keyword_units(kw_clean)
+    if len(units) == 1 and len(kw_clean) <= 2:
+        # Single 1-2 char units (e.g. "ai") are too ambiguous on their own
+        return 0.0
+    if units:
+        thai_text = _thai_span(text_clean)
+        matched = sum(1 for u in units if _unit_in_text(u, text_clean, thai_text))
+        coverage = matched / len(units)
+        if coverage >= 0.66:
+            return coverage * 100.0
+
     # Phrase-level match only: the input must be roughly the same length as the
-    # keyword (allows slight rewording) — never a partial window inside a longer
-    # sentence that merely resembles the keyword.
+    # keyword and *nearly identical* to it (allows slight rewording). The bar is
+    # high (>= 0.75) because short Thai phrases share many characters by chance
+    # ("เรียนอะไรบ้าง" vs "เตรียมอะไรมา" ~0.72) and must not trigger.
     if len(text_clean) <= len(kw_clean) * 2:
-        return difflib.SequenceMatcher(None, kw_clean, text_clean).ratio() * 100.0
+        ratio = difflib.SequenceMatcher(None, kw_clean, text_clean).ratio()
+        if ratio >= 0.75:
+            return ratio * 100.0
 
     return 0.0
 
