@@ -50,7 +50,7 @@ character_config:
   avatar: '' # Leave blank to use the first letter of the character name as the avatar (avatars/ is gitignored, so Railway has no mao.png)
   human_name: 'คุณ' # Will be used in the group conversation and the display name of the human.
   faq_threshold_percent: 60.0 # เปอร์เซ็นต์ความคล้ายของคำ (0-100%) เพื่อดึงสคริปต์และไฟล์เสียง FAQ มาตอบทันที (default: 60.0)
-  faq_enabled: false # เปิด/ปิดระบบ FAQ ตอบทันที (default: false = ปิด ให้ทุกคำถามผ่าน LLM/agent จริง)
+  faq_enabled: true # เปิด/ปิดระบบ FAQ ตอบทันที (default: false = ปิด ให้ทุกคำถามผ่าน LLM/agent จริง)
 
   # ============== File Knowledge Base (RAG) ==============
   # Drop .md files into knowledge_md/ - they are indexed at every server start
