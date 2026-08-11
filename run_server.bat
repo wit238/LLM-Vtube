@@ -15,6 +15,13 @@ if "%OPENCODE_API_KEY%"=="" (
     )
 )
 
+
 echo Starting Open-LLM-VTuber server ...
 uv run run_server.py %*
-exit /b %errorlevel%
+set "EXIT_CODE=%errorlevel%"
+if not "%EXIT_CODE%"=="0" (
+    echo.
+    echo Server exited with code %EXIT_CODE%. See the messages above.
+    pause
+)
+exit /b %EXIT_CODE%
