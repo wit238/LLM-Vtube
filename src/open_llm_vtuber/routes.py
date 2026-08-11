@@ -40,7 +40,9 @@ def init_client_ws_route(default_context_cache: ServiceContext) -> APIRouter:
         except Exception as e:
             logger.error(f"Error in WebSocket connection: {e}")
             await ws_handler.handle_disconnect(client_uid)
-            raise
+            # Do not re-raise: expected errors (e.g. client connecting while
+            # the server is still initializing) would otherwise dump a noisy
+            # ASGI traceback on every occurrence. The error is already logged.
 
     return router
 
