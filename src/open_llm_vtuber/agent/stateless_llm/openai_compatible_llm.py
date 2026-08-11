@@ -4,16 +4,16 @@ endpoints for language generation.
 """
 
 from typing import AsyncIterator, List, Dict, Any
+import asyncio
 from openai import (
-    AsyncStream,
     AsyncOpenAI,
     APIError,
     APIConnectionError,
+    APIStatusError,
     RateLimitError,
     NotGiven,
     NOT_GIVEN,
 )
-from openai.types.chat import ChatCompletionChunk
 from openai.types.chat.chat_completion_chunk import ChoiceDeltaToolCall
 from loguru import logger
 from .stateless_llm_interface import StatelessLLMInterface
@@ -115,22 +115,46 @@ class AsyncLLM(StatelessLLMInterface):
             available_tools = tools if self.support_tools else NOT_GIVEN
 
             stop_sequences = ["Human:", "AI:", "\nHuman:", "\nAI:", "\nUser:", "\nAssistant:", "Instruct:", "Instruction:"]
-            try:
-                stream: AsyncStream[
-                    ChatCompletionChunk
-                ] = await self.client.chat.completions.create(
-                    messages=messages_with_system,
-                    model=self.model,
-                    stream=True,
-                    temperature=self.temperature,
-                    tools=available_tools,
-                    stop=stop_sequences,
+
+            def _is_transient_error(err: Exception) -> bool:
+                """Provider-side failures worth retrying (connect/rate/5xx)."""
+                if isinstance(err, APIConnectionError) or isinstance(
+                    err, RateLimitError
+                ):
+                    return True
+                if isinstance(err, APIStatusError):
+                    return err.status_code == 429 or err.status_code >= 500
+                return False
+
+            stream = None
+            last_err: Exception | None = None
+            for attempt in range(3):  # transient errors: up to 3 tries
+                try:
+                    stream = await self.client.chat.completions.create(
+                        messages=messages_with_system,
+                        model=self.model,
+                        stream=True,
+                        temperature=self.temperature,
+                        tools=available_tools,
+                        stop=stop_sequences,
+                    )
+                    break
+                except Exception as create_err:
+                    last_err = create_err
+                    if not _is_transient_error(create_err):
+                        break  # non-transient: fall through to without-stop retry
+                    logger.warning(
+                        f"Chat completion attempt {attempt + 1} failed "
+                        f"(transient): {create_err}"
+                    )
+                    await asyncio.sleep(min(2**attempt, 5))
+            if stream is None:
+                # Some providers reject the `stop` parameter entirely; retry
+                # once without it before giving up.
+                logger.warning(
+                    f"Retrying chat completion without stop parameter due to: {last_err}"
                 )
-            except Exception as create_err:
-                logger.warning(f"Retrying chat completion without stop parameter due to: {create_err}")
-                stream: AsyncStream[
-                    ChatCompletionChunk
-                ] = await self.client.chat.completions.create(
+                stream = await self.client.chat.completions.create(
                     messages=messages_with_system,
                     model=self.model,
                     stream=True,
