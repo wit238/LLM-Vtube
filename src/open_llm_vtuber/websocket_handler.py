@@ -265,15 +265,20 @@ class WebSocketHandler:
     ) -> ServiceContext:
         """Initialize service context for a new session by cloning the default context"""
         # The default context is loaded asynchronously after the HTTP server is
-        # up. Wait a short while for it; if it still isn't ready, fail cleanly
-        # instead of crashing on None attributes. Note: `config` is set at the
-        # start of load_from_config, so we wait for `_initialized` instead to
-        # ensure all engines (agent, tts, etc.) are actually available.
-        for _ in range(60):
+        # up. Cold starts (model downloads, ASR/JaiTTS load) can take minutes,
+        # so keep the connection alive until init finishes. Note: `config` is
+        # set at the start of load_from_config, so we wait for `_initialized`
+        # instead to ensure all engines (agent, tts, etc.) are available.
+        for _ in range(600):  # up to ~5 minutes
             if self.default_context_cache._initialized:
+                break
+            if getattr(self.default_context_cache, "_init_error", None) is not None:
                 break
             await asyncio.sleep(0.5)
         if not self.default_context_cache._initialized:
+            init_error = getattr(self.default_context_cache, "_init_error", None)
+            if init_error is not None:
+                raise RuntimeError(f"Server initialization failed: {init_error}")
             raise RuntimeError(
                 "Server is still initializing (service context not loaded yet). "
                 "Please reconnect in a few seconds."

@@ -125,9 +125,13 @@ def ensure_jaitts_server(config: Config) -> None:
         logger.info("JaiTTS server already running - skipping auto-start.")
         return
 
-    server_dir = Path(jcfg.server_dir).expanduser() if jcfg.server_dir else Path("")
+    server_dir = (
+        Path(os.path.expandvars(jcfg.server_dir)).expanduser()
+        if jcfg.server_dir
+        else Path("")
+    )
     if not server_dir.is_dir():
-        ref_parent = Path(jcfg.ref_audio_path).expanduser().parent
+        ref_parent = Path(os.path.expandvars(jcfg.ref_audio_path)).expanduser().parent
         for candidate in (ref_parent, ref_parent / "jaitts_modal"):
             if (candidate / "server_local.py").exists():
                 server_dir = candidate
@@ -373,6 +377,7 @@ def run(console_log_level: str):
         except Exception as e:
             logger.error(f"Failed to initialize server context: {e}")
             setattr(server, "_init_error", e)
+            server.default_context_cache._init_error = e
 
     threading.Thread(target=_background_init, daemon=True).start()
 
