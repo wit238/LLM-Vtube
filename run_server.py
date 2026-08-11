@@ -57,12 +57,56 @@ def _health_ok(url: str, timeout: float = 2.0) -> bool:
         return False
 
 
+def _detect_jaitts_device(venv_python: Path) -> str:
+    """Ask the JaiTTS venv which torch device it can use.
+
+    Runs a tiny probe inside the venv so we report the real torch build
+    (CUDA vs CPU wheels) and whether a GPU is actually present, instead of
+    relying on the machine's global torch.
+    """
+    probe = (
+        "import torch;"
+        "print('CUDA_AVAILABLE' if torch.cuda.is_available() else 'CPU');"
+        "print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
+    )
+    try:
+        result = subprocess.run(
+            [str(venv_python), "-c", probe],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        lines = [ln.strip() for ln in result.stdout.splitlines() if ln.strip()]
+        if result.returncode != 0 or not lines:
+            logger.warning(
+                f"JaiTTS device probe failed (rc={result.returncode}): "
+                f"{result.stderr.strip()[:200]}"
+            )
+            return "cpu"
+        device = "cuda" if lines[0] == "CUDA_AVAILABLE" else "cpu"
+        logger.info(
+            f"JaiTTS torch device: {device}"
+            + (f" ({lines[1]})" if device == "cuda" and len(lines) > 1 else "")
+        )
+        return device
+    except subprocess.TimeoutExpired:
+        logger.warning("JaiTTS device probe timed out - assuming CPU.")
+        return "cpu"
+    except Exception as e:
+        logger.warning(f"JaiTTS device probe error: {e} - assuming CPU.")
+        return "cpu"
+
+
 def ensure_jaitts_server(config: Config) -> None:
     """Auto-start the local JaiTTS server when jaitts_tts is selected.
 
     Uses the jaitts_modal project's own CUDA venv (a separate Python env).
     The server dir is taken from `server_dir`, or derived from the parent of
     `ref_audio_path`. Skips silently if the server is already healthy.
+
+    The device (CUDA if a GPU is present, else CPU) is detected by probing the
+    JaiTTS venv itself, and the chosen device is exported as an env var so
+    `server_local.py` / `run_local.py` pick it up explicitly.
     """
     global _jaitss_proc
     try:
@@ -103,8 +147,10 @@ def ensure_jaitts_server(config: Config) -> None:
         )
         return
 
+    device = _detect_jaitts_device(venv_python)
+
     logger.info(
-        f"Auto-starting JaiTTS server (CUDA venv) from {server_dir} ... "
+        f"Auto-starting JaiTTS server ({device} venv) from {server_dir} ... "
         f"(first load may take a while)"
     )
     log_dir = Path(__file__).parent / "logs"
@@ -121,6 +167,8 @@ def ensure_jaitts_server(config: Config) -> None:
     child_env.pop("HF_HOME", None)
     child_env.pop("HF_HUB_CACHE", None)
     child_env.pop("MODELSCOPE_CACHE", None)
+    # Explicitly tell the JaiTTS server which torch device to use.
+    child_env["JAITTS_DEVICE"] = device
     try:
         _jaitss_proc = subprocess.Popen(
             [str(venv_python), "-X", "utf8", str(server_script)],
@@ -146,7 +194,7 @@ def ensure_jaitts_server(config: Config) -> None:
             _jaitss_proc = None
             return
         if _health_ok(health_url):
-            logger.info("JaiTTS server is ready (CUDA voice clone active).")
+            logger.info(f"JaiTTS server is ready ({device} voice clone active).")
             return
         time.sleep(2)
 
