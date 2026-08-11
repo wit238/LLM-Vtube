@@ -9,6 +9,9 @@ if [ -f "/app/conf/conf.yaml" ]; then
   ln -sf /app/conf/conf.yaml /app/conf.yaml
 elif [ -f "/app/conf.yaml" ]; then
   echo "Using repository conf.yaml"
+elif [ -f "/app/config_templates/conf.railway.yaml" ] && { [ -n "${RAILWAY_ENVIRONMENT:-}" ] || [ -n "${RAILWAY_PROJECT_ID:-}" ] || [ -n "${RAILWAY_SERVICE_ID:-}" ]; }; then
+  echo "Railway detected - using config_templates/conf.railway.yaml"
+  cp /app/config_templates/conf.railway.yaml /app/conf.yaml
 elif [ -f "/app/config_templates/conf.default.yaml" ]; then
   echo "Using default config template conf.default.yaml"
   cp /app/config_templates/conf.default.yaml /app/conf.yaml

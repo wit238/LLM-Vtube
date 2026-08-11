@@ -138,6 +138,22 @@
 
 ---
 
+## ช่วงที่ 8: รองรับ Railway Deployment
+
+- **ใหม่**: `config_templates/conf.railway.yaml` — template ที่ auto-selected บน Railway
+  - คัดลอกจาก `conf.yaml` จริง (agent/LLM/ASR/TTS/FAQ/RAG เดิมครบ) แต่แทนที่ path เฉพาะเครื่องและ key จริงด้วย env var:
+    - `OPENCODE_API_KEY` (LLM), `JAITTS_REF_AUDIO`, `JAITTS_SERVER_DIR`
+    - optional: `FISH_API_KEY`, `ELEVENLABS_API_KEY`
+  - ใช้ `read_yaml` resolve `${ENV}` เดิมของโปรเจกต์ (ไม่ต้องแก้ engine)
+  - ไม่มี secret/path เครื่องหลุด (ตรวจแล้ว)
+- **แก้**: `scripts/start-app.sh` — ลำดับเลือก conf.yaml:
+  1. `/app/conf/conf.yaml` (volume/user) → 2. repo `conf.yaml` → 3. **Railway auto-detect** (`RAILWAY_ENVIRONMENT`/`PROJECT_ID`/`SERVICE_ID` → ใช้ `conf.railway.yaml`) → 4. default template
+- **Dockerfile**: มีอยู่แล้ว (python:3.10-slim + uv + start-app.sh, EXPOSE 12393) — `run_server.py` อ่าน `PORT` env อยู่แล้ว (Railway inject `PORT` → ใช้ได้ทันที)
+- `.dockerignore` เก็บ `config_templates/` + `knowledge_md/` ไว้ใน image อยู่แล้ว
+- *หมายเหตุ*: JaiTTS/Typhoon ต้องการ GPU + local server — บน Railway ที่ไม่มี GPU ต้องตั้ง `auto_start: false` + `api_url` ชี้ server ภายนอก (มี note ใน template)
+
+---
+
 ## ไฟล์ใหม่ทั้งหมด (ไม่รวมของเดิม)
 - `src/open_llm_vtuber/tts/jaitts_tts.py`
 - `src/open_llm_vtuber/asr/typhoon_asr.py`
