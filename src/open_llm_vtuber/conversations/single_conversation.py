@@ -18,9 +18,6 @@ from .tts_manager import TTSTaskManager
 from ..chat_history_manager import store_message
 from ..service_context import ServiceContext
 
-import os
-from ..utils.stream_audio import prepare_audio_payload
-
 # Import necessary types from agent outputs
 from ..agent.output_types import SentenceOutput, AudioOutput, DisplayText
 from .faq_handler import match_faq
@@ -54,14 +51,81 @@ async def process_single_conversation(
     full_response = ""  # Initialize full_response here
 
     try:
-        # Send initial signals
-        await send_conversation_start_signals(websocket_send)
-        logger.info(f"New Conversation Chain {session_emoji} started!")
-
-        # Process user input
+        # Process user input first so a FAQ match can answer instantly
         input_text = await process_user_input(
             user_input, context.asr_engine, websocket_send
         )
+
+        logger.info(f"User input: {input_text}")
+        if images:
+            logger.info(f"With {len(images)} images")
+
+        # === Instant FAQ answer: no LLM involved, spoken via the real TTS ===
+        faq_enabled = getattr(context.character_config, "faq_enabled", False)
+        faq_threshold = getattr(context.character_config, "faq_threshold_percent", 60.0)
+        faq_match = (
+            match_faq(input_text, similarity_threshold_percent=faq_threshold)
+            if faq_enabled
+            else None
+        )
+        if faq_match and not metadata:
+            logger.info(f"🎯 FAQ Match found: {faq_match['id']}")
+            answer_text = faq_match["answer"]
+            full_response = answer_text
+
+            skip_history = metadata and metadata.get("skip_history", False)
+            if context.history_uid and not skip_history:
+                store_message(
+                    conf_uid=context.character_config.conf_uid,
+                    history_uid=context.history_uid,
+                    role="human",
+                    content=input_text,
+                    name=context.character_config.human_name,
+                )
+
+            display_text = DisplayText(
+                name=context.character_config.character_name or "มาลี",
+                avatar=context.character_config.avatar or "mao.png",
+                text=answer_text,
+            )
+            await tts_manager.speak(
+                tts_text=answer_text,
+                display_text=display_text,
+                actions=None,
+                live2d_model=context.live2d_model,
+                tts_engine=context.tts_engine,
+                websocket_send=websocket_send,
+            )
+            if tts_manager.task_list:
+                results = await asyncio.gather(
+                    *tts_manager.task_list, return_exceptions=True
+                )
+                for result in results:
+                    if isinstance(result, Exception):
+                        logger.warning(
+                            f"TTS task failed but conversation continues: {result}"
+                        )
+                await websocket_send(json.dumps({"type": "backend-synth-complete"}))
+            await finalize_conversation_turn(
+                tts_manager=tts_manager,
+                websocket_send=websocket_send,
+                client_uid=client_uid,
+            )
+            if context.history_uid and full_response:
+                store_message(
+                    conf_uid=context.character_config.conf_uid,
+                    history_uid=context.history_uid,
+                    role="ai",
+                    content=full_response,
+                    name=context.character_config.character_name,
+                    avatar=context.character_config.avatar,
+                )
+                logger.info(f"AI response: {full_response}")
+            return full_response
+
+        # Send initial signals (conversation-chain-start + "กำลังคิด..." subtitle)
+        await send_conversation_start_signals(websocket_send)
+        logger.info(f"New Conversation Chain {session_emoji} started!")
 
         # Create batch input
         batch_input = create_batch_input(
@@ -104,96 +168,56 @@ async def process_single_conversation(
         if skip_history:
             logger.debug("Skipping storing user input to history (proactive speak)")
 
-        logger.info(f"User input: {input_text}")
-        if images:
-            logger.info(f"With {len(images)} images")
+        try:
+            # agent.chat yields Union[SentenceOutput, Dict[str, Any]]
+            agent_output_stream = context.agent_engine.chat(batch_input)
 
-        # Check if user input matches any FAQ question for instant, pre-rendered answer & clear voice
-        faq_enabled = getattr(context.character_config, "faq_enabled", False)
-        faq_threshold = getattr(context.character_config, "faq_threshold_percent", 60.0)
-        faq_match = (
-            match_faq(input_text, similarity_threshold_percent=faq_threshold)
-            if faq_enabled
-            else None
-        )
-        if faq_match and not metadata:
-            logger.info(f"🎯 FAQ Match found: {faq_match['id']}")
-            answer_text = faq_match["answer"]
-            audio_path = faq_match.get("audio_path")
-            full_response = answer_text
+            async for output_item in agent_output_stream:
+                if (
+                    isinstance(output_item, dict)
+                    and output_item.get("type") == "tool_call_status"
+                ):
+                    # Handle tool status event: send WebSocket message
+                    output_item["name"] = context.character_config.character_name
+                    logger.debug(f"Sending tool status update: {output_item}")
 
-            display_text = DisplayText(
-                name=context.character_config.character_name or "มาลี",
-                avatar=context.character_config.avatar or "mao.png",
-                text=answer_text,
-            )
-            if audio_path and os.path.exists(audio_path):
-                payload = prepare_audio_payload(
-                    audio_path=audio_path,
-                    display_text=display_text,
-                    actions=None,
-                )
-                await websocket_send(json.dumps(payload))
-            else:
-                await tts_manager.speak(
-                    tts_text=answer_text,
-                    display_text=display_text,
-                    actions=None,
-                    live2d_model=context.live2d_model,
-                    tts_engine=context.tts_engine,
-                    websocket_send=websocket_send,
-                )
-        else:
-            try:
-                # agent.chat yields Union[SentenceOutput, Dict[str, Any]]
-                agent_output_stream = context.agent_engine.chat(batch_input)
+                    await websocket_send(json.dumps(output_item))
 
-                async for output_item in agent_output_stream:
-                    if (
-                        isinstance(output_item, dict)
-                        and output_item.get("type") == "tool_call_status"
-                    ):
-                        # Handle tool status event: send WebSocket message
-                        output_item["name"] = context.character_config.character_name
-                        logger.debug(f"Sending tool status update: {output_item}")
-
-                        await websocket_send(json.dumps(output_item))
-
-                    elif isinstance(output_item, (SentenceOutput, AudioOutput)):
-                        # Handle SentenceOutput or AudioOutput
-                        response_part = await process_agent_output(
-                            output=output_item,
-                            character_config=context.character_config,
-                            live2d_model=context.live2d_model,
-                            tts_engine=context.tts_engine,
-                            websocket_send=websocket_send,  # Pass websocket_send for audio/tts messages
-                            tts_manager=tts_manager,
-                            translate_engine=context.translate_engine,
-                        )
-                        # Ensure response_part is treated as a string before concatenation
-                        response_part_str = (
-                            str(response_part) if response_part is not None else ""
-                        )
-                        full_response += response_part_str  # Accumulate text response
-                    else:
-                        logger.warning(
-                            f"Received unexpected item type from agent chat stream: {type(output_item)}"
-                        )
-                        logger.debug(f"Unexpected item content: {output_item}")
-
-            except Exception as e:
-                logger.exception(
-                    f"Error processing agent response stream: {e}"
-                )  # Log with stack trace
-                await websocket_send(
-                    json.dumps(
-                        {
-                            "type": "error",
-                            "message": f"Error processing agent response: {str(e)}",
-                        }
+                elif isinstance(output_item, (SentenceOutput, AudioOutput)):
+                    # Handle SentenceOutput or AudioOutput
+                    response_part = await process_agent_output(
+                        output=output_item,
+                        character_config=context.character_config,
+                        live2d_model=context.live2d_model,
+                        tts_engine=context.tts_engine,
+                        websocket_send=websocket_send,  # Pass websocket_send for audio/tts messages
+                        tts_manager=tts_manager,
+                        translate_engine=context.translate_engine,
                     )
+                    # Ensure response_part is treated as a string before concatenation
+                    response_part_str = (
+                        str(response_part) if response_part is not None else ""
+                    )
+                    full_response += response_part_str  # Accumulate text response
+                else:
+                    logger.warning(
+                        f"Received unexpected item type from agent chat stream: {type(output_item)}"
+                    )
+                    logger.debug(f"Unexpected item content: {output_item}")
+
+        except Exception as e:
+            logger.exception(
+                f"Error processing agent response stream: {e}"
+            )  # Log with stack trace
+            await websocket_send(
+                json.dumps(
+                    {
+                        "type": "error",
+                        "message": f"Error processing agent response: {str(e)}",
+                    }
                 )
-                # full_response will contain partial response before error
+            )
+            # full_response will contain partial response before error
         # --- End processing agent response ---
 
         # Wait for any pending TTS tasks
