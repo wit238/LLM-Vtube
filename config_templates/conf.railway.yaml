@@ -357,11 +357,9 @@ character_config:
 
   # =================== Text to Speech ===================
   tts_config:
-    # On Railway there is no local JaiTTS server, so edge_tts (Microsoft Edge
-    # neural voices, free, no GPU) is used. To use the cloned มาลี voice instead,
-    # set tts_model: 'jaitts_tts' and point api_url at the Modal-hosted server
-    # (deploy with: uv run modal deploy main.py inside jaitts_modal).
-    tts_model: 'edge_tts'
+    # JaiTTS (F5-TTS) Thai zero-shot voice cloning hosted on Modal (cloud GPU).
+    # Deploy once: cd jaitts_modal && uv run modal deploy main.py
+    tts_model: 'jaitts_tts'
     # text to speech model options:
     #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
     #   'cosyvoice_tts', 'melo_tts', 'coqui_tts', 'piper_tts',
