@@ -35,6 +35,10 @@ class TTSEngine(TTSInterface):
         trim_headroom: float = 0.10,
         trim_tail_margin: float = 0.15,
         trim_min_cut: float = 0.30,
+        fallback_tts: str = "",
+        fallback_voice: str = "th-TH-PremwadeeNeural",
+        fallback_pitch: str = "+10Hz",
+        fallback_rate: str = "-14%",
     ) -> None:
         self.api_url = api_url
         self.ref_audio_path = ref_audio_path
@@ -50,6 +54,32 @@ class TTSEngine(TTSInterface):
         self.trim_headroom = float(trim_headroom)
         self.trim_tail_margin = float(trim_tail_margin)
         self.trim_min_cut = float(trim_min_cut)
+        self.fallback_tts = fallback_tts
+        self.fallback_voice = fallback_voice
+        self.fallback_pitch = fallback_pitch
+        self.fallback_rate = fallback_rate
+        self._fallback_engine = None
+
+    def _get_fallback_engine(self):
+        """Lazily build the fallback TTS engine (e.g. edge_tts)."""
+        if self._fallback_engine is None and self.fallback_tts:
+            if self.fallback_tts == "edge_tts":
+                from .edge_tts import TTSEngine as EdgeTTSEngine
+
+                self._fallback_engine = EdgeTTSEngine(
+                    voice=self.fallback_voice or "th-TH-PremwadeeNeural",
+                    pitch=self.fallback_pitch,
+                    rate=self.fallback_rate,
+                )
+                logger.warning(
+                    f"jaitts_tts: fallback TTS enabled -> {self.fallback_tts}"
+                )
+            else:
+                logger.warning(
+                    f"jaitts_tts: unknown fallback_tts '{self.fallback_tts}' "
+                    f"(supported: 'edge_tts')"
+                )
+        return self._fallback_engine
 
     def generate_audio(self, text: str, file_name_no_ext=None) -> str:
         if not text or not text.strip():
@@ -77,33 +107,47 @@ class TTSEngine(TTSInterface):
         logger.info(f"jaitts_tts: POST {self.api_url} ({len(text)} chars)")
         t0 = time.time()
         try:
-            resp = httpx.post(
-                self.api_url, data=data, files=files, timeout=self.timeout
+            try:
+                resp = httpx.post(
+                    self.api_url, data=data, files=files, timeout=self.timeout
+                )
+            except httpx.HTTPError as e:
+                raise ConnectionError(
+                    f"JaiTTS server unreachable at {self.api_url}. "
+                    "Deploy it with: cd jaitts_modal && uv run modal deploy main.py"
+                ) from e
+
+            resp.raise_for_status()
+            if len(resp.content) == 0:
+                raise RuntimeError("JaiTTS server returned an empty response")
+
+            with open(out_file, "wb") as f:
+                f.write(resp.content)
+            logger.info(
+                f"jaitts_tts: got WAV in {time.time() - t0:.1f}s "
+                f"({len(resp.content)} bytes) -> {out_file}"
             )
-        except httpx.HTTPError as e:
-            raise ConnectionError(
-                f"JaiTTS server unreachable at {self.api_url}. "
-                "Deploy it with: cd jaitts_modal && uv run modal deploy main.py"
-            ) from e
+
+            if self.trim_audio:
+                self._trim_wav(out_file, text)
+
+            return out_file
+        except (ConnectionError, httpx.HTTPError, RuntimeError) as e:
+            # JaiTTS unavailable (not deployed / cold start / timeout) - fall
+            # back to the configured engine (e.g. edge_tts) if one is set.
+            engine = self._get_fallback_engine()
+            if engine is not None:
+                logger.warning(
+                    f"jaitts_tts: {e} - falling back to {self.fallback_tts}"
+                )
+                try:
+                    return engine.generate_audio(text, file_name_no_ext)
+                except Exception as fe:
+                    logger.error(f"jaitts_tts: fallback TTS also failed: {fe}")
+            raise
         finally:
             if files is not None:
                 files["ref_audio"][1].close()
-
-        resp.raise_for_status()
-        if len(resp.content) == 0:
-            raise RuntimeError("JaiTTS server returned an empty response")
-
-        with open(out_file, "wb") as f:
-            f.write(resp.content)
-        logger.info(
-            f"jaitts_tts: got WAV in {time.time() - t0:.1f}s "
-            f"({len(resp.content)} bytes) -> {out_file}"
-        )
-
-        if self.trim_audio:
-            self._trim_wav(out_file, text)
-
-        return out_file
 
     def _trim_wav(self, out_file: str, text: str) -> None:
         """Post-process the generated WAV: cut leading garbage / trailing

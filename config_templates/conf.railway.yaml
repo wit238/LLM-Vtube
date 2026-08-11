@@ -380,6 +380,12 @@ character_config:
       timeout: 300.0 # HTTP timeout in seconds for one synthesis call
       auto_start: false # Modal hosts the server - no local auto-start needed
       server_dir: '' # Only used with auto_start: true (local jaitts_modal venv)
+      # Fallback TTS used automatically when JaiTTS is unreachable/not deployed.
+      # '' = no fallback (TTS error is raised). Otherwise the engine name.
+      fallback_tts: 'edge_tts'
+      fallback_voice: 'th-TH-PremwadeeNeural'
+      fallback_pitch: '+10Hz'
+      fallback_rate: '-14%'
       server_startup_timeout: 300 # Max seconds to wait for the model to load before giving up
       # Post-process the generated WAV to cut leading garbage / trailing noise
       # (same method as jaitts_modal trim_leading.py: faster-whisper word

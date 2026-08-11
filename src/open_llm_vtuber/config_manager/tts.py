@@ -712,6 +712,10 @@ class JaiTTSTTSConfig(I18nMixin):
     trim_headroom: float = Field(0.10, alias="trim_headroom")
     trim_tail_margin: float = Field(0.15, alias="trim_tail_margin")
     trim_min_cut: float = Field(0.30, alias="trim_min_cut")
+    fallback_tts: str = Field("", alias="fallback_tts")
+    fallback_voice: str = Field("th-TH-PremwadeeNeural", alias="fallback_voice")
+    fallback_pitch: str = Field("+10Hz", alias="fallback_pitch")
+    fallback_rate: str = Field("-14%", alias="fallback_rate")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "api_url": Description(
@@ -775,8 +779,21 @@ class JaiTTSTTSConfig(I18nMixin):
             zh="最后一个匹配词之后保留的音频秒数",
         ),
         "trim_min_cut": Description(
-            en="Minimum seconds of garbage required before a cut is applied",
-            zh="进行裁剪所需的最小垃圾音频秒数",
+            en="Minimum garbage seconds before a cut is applied",
+            zh="触发剪切前的最少杂音秒数",
+        ),
+        "fallback_tts": Description(
+            en="Fallback TTS engine used when JaiTTS is unreachable (e.g. 'edge_tts'; '' = no fallback)",
+            zh="JaiTTS 不可达时使用的备用 TTS 引擎（如 'edge_tts'；'' 表示不启用）",
+        ),
+        "fallback_voice": Description(
+            en="Voice used by the fallback TTS engine", zh="备用 TTS 引擎使用的音色"
+        ),
+        "fallback_pitch": Description(
+            en="Pitch used by the fallback TTS engine", zh="备用 TTS 引擎使用的音高"
+        ),
+        "fallback_rate": Description(
+            en="Speaking rate used by the fallback TTS engine", zh="备用 TTS 引擎使用的语速"
         ),
     }
 
