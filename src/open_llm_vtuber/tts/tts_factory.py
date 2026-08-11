@@ -233,6 +233,10 @@ class TTSFactory:
                 trim_headroom=kwargs.get("trim_headroom", 0.10),
                 trim_tail_margin=kwargs.get("trim_tail_margin", 0.15),
                 trim_min_cut=kwargs.get("trim_min_cut", 0.30),
+                fallback_tts=kwargs.get("fallback_tts", ""),
+                fallback_voice=kwargs.get("fallback_voice", "th-TH-PremwadeeNeural"),
+                fallback_pitch=kwargs.get("fallback_pitch", "+10Hz"),
+                fallback_rate=kwargs.get("fallback_rate", "-14%"),
             )
         else:
             raise ValueError(f"Unknown TTS engine type: {engine_type}")

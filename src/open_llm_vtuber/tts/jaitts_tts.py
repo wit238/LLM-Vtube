@@ -121,6 +121,17 @@ class TTSEngine(TTSInterface):
             if len(resp.content) == 0:
                 raise RuntimeError("JaiTTS server returned an empty response")
 
+            # Modal web endpoints report whether the function was cold-started
+            # (X-Modal-Slot-Status: "cold start") or reused a warm container,
+            # so we can surface it in the run_server terminal for monitoring.
+            slot_status = resp.headers.get("x-modal-slot-status", "").strip()
+            if slot_status:
+                cold = "cold start" in slot_status.lower()
+                logger.info(
+                    f"jaitts_tts: Modal slot status: {slot_status}"
+                    + (" (first call after idle - slower)" if cold else "")
+                )
+
             with open(out_file, "wb") as f:
                 f.write(resp.content)
             logger.info(
@@ -135,10 +146,12 @@ class TTSEngine(TTSInterface):
         except (ConnectionError, httpx.HTTPError, RuntimeError) as e:
             # JaiTTS unavailable (not deployed / cold start / timeout) - fall
             # back to the configured engine (e.g. edge_tts) if one is set.
+            logger.warning(f"jaitts_tts: {e}")
             engine = self._get_fallback_engine()
             if engine is not None:
                 logger.warning(
-                    f"jaitts_tts: {e} - falling back to {self.fallback_tts}"
+                    f"jaitts_tts: falling back to {self.fallback_tts} "
+                    f"(total so far {time.time() - t0:.1f}s)"
                 )
                 try:
                     result = engine.generate_audio(text, file_name_no_ext)
@@ -146,6 +159,10 @@ class TTSEngine(TTSInterface):
                     logger.error(f"jaitts_tts: fallback TTS also failed: {fe}")
                 else:
                     if result:
+                        logger.info(
+                            f"jaitts_tts: fallback {self.fallback_tts} produced "
+                            f"{result} in {time.time() - t0:.1f}s"
+                        )
                         return result
                     logger.error(
                         "jaitts_tts: fallback TTS returned no audio - re-raising"
