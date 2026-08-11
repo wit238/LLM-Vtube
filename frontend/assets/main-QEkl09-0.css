@@ -34,31 +34,9 @@ body,html{margin:0;padding:0;overflow:visible;background-color:transparent}.cs-m
   color: #ffffff !important;
 }
 
-/* 2. Subtitle Overlay Box (ซ่อนกล่องข้อความบรรยายทั้งหมดอย่างสมบูรณ์) */
-div[style*="bottom: 120px"],
-div[style*="bottom:120px"],
-div[style*="z-index: 1000"],
-div[style*="z-index:1000"],
-div[style*="zIndex: 1000"],
-div[style*="zIndex:1000"],
-div:has(button[aria-label="Close subtitle"]),
-button[aria-label="Close subtitle"],
-div[class*="subtitle"],
-p[class*="subtitle"],
-div[class*="caption"],
-p[class*="caption"],
-div[class*="overlay"]:not(.cs-overlay) {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  width: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  pointer-events: none !important;
-}
 
-/* 3. Bottom Control & Input Bar (กล่องพิมพ์ข้อความ) */
+
+/* 3. Bottom Control & Input Bar (à¸à¸¥à¹ˆà¸­à¸‡à¸žà¸´à¸¡à¸žà¹Œà¸‚à¹‰à¸­à¸„à¸§à¸²à¸¡) */
 .cs-chat-container > div:last-child {
   background-color: #0f131d !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
