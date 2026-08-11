@@ -83,7 +83,7 @@ class TTSEngine(TTSInterface):
         except httpx.HTTPError as e:
             raise ConnectionError(
                 f"JaiTTS server unreachable at {self.api_url}. "
-                "Start it with jaitts_modal\\start_jaitts_server.bat"
+                "Deploy it with: cd jaitts_modal && uv run modal deploy main.py"
             ) from e
         finally:
             if files is not None:
