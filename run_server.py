@@ -14,14 +14,17 @@ import uvicorn
 from loguru import logger
 from upgrade_codes.upgrade_manager import UpgradeManager
 
+# Set HF cache locations BEFORE importing project modules: faq_handler eagerly
+# pre-warms its semantic vectors at import time and would otherwise hit the
+# default user cache (missing weights -> a 2.2GB re-download to the wrong dir).
+os.environ["HF_HOME"] = str(Path(__file__).parent / "models")
+os.environ["MODELSCOPE_CACHE"] = str(Path(__file__).parent / "models")
+
 from src.open_llm_vtuber.server import WebSocketServer
 from src.open_llm_vtuber.config_manager import Config, read_yaml, validate_config
 
 # Keeps the auto-started JaiTTS server process handle so it can be stopped on exit.
 _jaitss_proc = None
-
-os.environ["HF_HOME"] = str(Path(__file__).parent / "models")
-os.environ["MODELSCOPE_CACHE"] = str(Path(__file__).parent / "models")
 
 # Add virtual environment Scripts folder to PATH so ffmpeg can be found by pydub
 venv_scripts = str(Path(sys.executable).parent)
