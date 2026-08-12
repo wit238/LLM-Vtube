@@ -812,7 +812,7 @@ class QwenTTSConfig(I18nMixin):
     """
 
     api_key: str = Field("", alias="api_key")
-    model: str = Field("qwen3-tts-instruct-flash", alias="model")
+    model: str = Field("qwen3-tts-flash", alias="model")
     voice: str = Field("Cherry", alias="voice")
     base_url: str = Field(
         "https://dashscope-intl.aliyuncs.com/api/v1", alias="base_url"

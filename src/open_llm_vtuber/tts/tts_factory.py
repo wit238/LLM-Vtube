@@ -220,7 +220,7 @@ class TTSFactory:
 
             return QwenTTSEngine(
                 api_key=kwargs.get("api_key", ""),
-                model=kwargs.get("model", "qwen3-tts-instruct-flash"),
+                model=kwargs.get("model", "qwen3-tts-flash"),
                 voice=kwargs.get("voice", "Cherry"),
                 base_url=kwargs.get(
                     "base_url", "https://dashscope-intl.aliyuncs.com/api/v1"

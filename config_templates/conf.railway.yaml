@@ -376,11 +376,11 @@ character_config:
       # works locally and on Railway. Requires an International Model Studio
       # API key (set DASHSCOPE_API_KEY in Railway's env vars).
       api_key: '${DASHSCOPE_API_KEY}'
-      model: 'qwen3-tts-instruct-flash' # instruct model: MultiModal API + instructions + language_type
+      model: 'qwen3-tts-flash' # qwen-tts models only (SpeechSynthesizer API)
       voice: 'Cherry' # preset voices: Cherry, Serena, ...
       base_url: 'https://dashscope-intl.aliyuncs.com/api/v1' # use -intl for international accounts
       max_chars: 1200 # max text chars per API call (longer replies are split + concatenated)
-      language_type: '' # 'Japanese', 'Thai', ... - empty = auto-detect from the text
+      language_type: '' # 'Chinese', 'Japanese', ... - empty = auto-detect from the text
       instructions: '' # voice style for the instruct model; empty = engine default (cute anime girl)
       optimize_instructions: true # let the API optimize the instructions
       timeout: 120.0 # HTTP timeout in seconds for one synthesis call

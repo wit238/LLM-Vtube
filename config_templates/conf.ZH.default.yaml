@@ -298,11 +298,11 @@ character_config:
       # 本地和 Railway 都能用。需要国际站 Model Studio API 密钥：
       # 设置 DASHSCOPE_API_KEY 环境变量（或直接把密钥填在这里 - conf.yaml 已被 git 忽略）。
       api_key: '${DASHSCOPE_API_KEY}'
-      model: 'qwen3-tts-instruct-flash' # instruct 模型：MultiModal API + instructions + language_type
+      model: 'qwen3-tts-flash' # 仅支持 qwen-tts 模型（SpeechSynthesizer API）
       voice: 'Cherry' # 预设音色：Cherry、Serena 等
       base_url: 'https://dashscope-intl.aliyuncs.com/api/v1' # 国际账号使用 -intl
       max_chars: 1200 # 每次 API 调用的最大字符数（更长的回复会被拆分后拼接）
-      language_type: '' # 'Japanese'、'Thai' 等 - 留空则根据文本自动检测
+      language_type: '' # 'Chinese'、'Japanese' 等 - 留空则根据文本自动检测
       instructions: '' # instruct 模型的语音风格指令；留空则使用引擎默认（可爱的动漫女孩）
       optimize_instructions: true # 让 API 优化指令
       timeout: 120.0 # 单次合成的 HTTP 超时（秒）

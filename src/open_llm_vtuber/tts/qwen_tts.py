@@ -18,7 +18,7 @@ from loguru import logger
 from .tts_interface import TTSInterface
 
 _DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/api/v1"
-_DEFAULT_MODEL = "qwen3-tts-instruct-flash"
+_DEFAULT_MODEL = "qwen3-tts-flash"
 _DEFAULT_VOICE = "Cherry"
 # Keep the default below the API's per-call text limit.
 _DEFAULT_MAX_CHARS = 1200
@@ -290,12 +290,16 @@ class TTSEngine(TTSInterface):
                             f"Qwen3-TTS API returned no audio: {response}"
                         )
                 else:
-                    response = SpeechSynthesizer.call(
+                    kwargs = dict(
                         model=self.model,
                         api_key=self.api_key,
                         text=chunk,
                         voice=self.voice,
                     )
+                    lang = self._resolve_language_type(chunk)
+                    if lang:
+                        kwargs["language_type"] = lang
+                    response = SpeechSynthesizer.call(**kwargs)
                     url = response.output["audio"]["url"]
             except RuntimeError:
                 raise
