@@ -1,9 +1,10 @@
 """Qwen3-TTS (DashScope) TTS engine.
 
-Cloud TTS via Alibaba Cloud Model Studio (DashScope) qwen-tts models
-(e.g. qwen3-tts-flash-2025-11-27). No GPU needed - works locally and on
-Railway. Long replies are split into per-call chunks (the API has a text
-length limit) and the resulting WAVs are concatenated into one file.
+Cloud TTS via Alibaba Cloud Model Studio (DashScope) qwen-tts models. The
+default `qwen3-tts-instruct-flash` goes through MultiModalConversation and
+supports `instructions` (voice style) + `language_type`. No GPU needed -
+works locally and on Railway. Long replies are split into per-call chunks
+(the API has a text length limit) and the resulting WAVs are concatenated.
 """
 
 import os
@@ -17,10 +18,39 @@ from loguru import logger
 from .tts_interface import TTSInterface
 
 _DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/api/v1"
-_DEFAULT_MODEL = "qwen3-tts-flash-2025-11-27"
+_DEFAULT_MODEL = "qwen3-tts-instruct-flash"
 _DEFAULT_VOICE = "Cherry"
 # Keep the default below the API's per-call text limit.
 _DEFAULT_MAX_CHARS = 1200
+
+_DEFAULT_INSTRUCTIONS = (
+    "Speak like a cute, cheerful anime girl. Use a youthful, bright, soft "
+    "and feminine voice with a slightly higher pitch. Sound energetic, "
+    "playful, expressive and charming with lively intonation and natural "
+    "pitch variation. Keep the pronunciation clear and natural in the given "
+    "language. Do not sound like a news anchor or a professional narrator."
+)
+
+# langdetect codes -> DashScope language_type values
+_LANG_MAP = {
+    "zh": "Chinese",
+    "zh-cn": "Chinese",
+    "zh-tw": "Chinese",
+    "en": "English",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "it": "Italian",
+    "vi": "Vietnamese",
+    "th": "Thai",
+    "ar": "Arabic",
+    "id": "Indonesian",
+    "hi": "Hindi",
+}
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?;:。！？；：…\n])\s+")
 # '${VAR}' left unresolved in conf.yaml means "no key" -> fall back to env.
@@ -28,7 +58,7 @@ _PLACEHOLDER = re.compile(r"^\$\{\w+\}$")
 
 
 class TTSEngine(TTSInterface):
-    """Qwen3-TTS via the DashScope SpeechSynthesizer API."""
+    """Qwen3-TTS via the DashScope API (instruct models via MultiModal)."""
 
     def __init__(
         self,
@@ -37,6 +67,9 @@ class TTSEngine(TTSInterface):
         voice: str = _DEFAULT_VOICE,
         base_url: str = _DEFAULT_BASE_URL,
         max_chars: int = _DEFAULT_MAX_CHARS,
+        language_type: str = "",
+        instructions: str = "",
+        optimize_instructions: bool = True,
         timeout: float = 120.0,
         trim_audio: bool = True,
         trim_model: str = "small",
@@ -58,6 +91,9 @@ class TTSEngine(TTSInterface):
         self.voice = voice
         self.base_url = base_url
         self.max_chars = int(max_chars)
+        self.language_type = language_type
+        self.instructions = instructions
+        self.optimize_instructions = bool(optimize_instructions)
         self.timeout = float(timeout)
         self.trim_audio = bool(trim_audio)
         self.trim_model = trim_model
@@ -181,12 +217,50 @@ class TTSEngine(TTSInterface):
                     )
             raise
 
+    def _resolve_language_type(self, text: str) -> str | None:
+        """Config value wins; otherwise auto-detect via langdetect."""
+        if self.language_type:
+            return self.language_type
+        try:
+            from langdetect import detect
+
+            return _LANG_MAP.get(detect(text).lower())
+        except Exception:
+            return None
+
+    @staticmethod
+    def _extract_audio_url(response) -> str | None:
+        """Pull the audio URL out of a MultiModalConversation response."""
+        try:
+            audio = response.output.get("audio") or {}
+            url = audio.get("url")
+            if url:
+                return url
+        except (AttributeError, TypeError):
+            pass
+        try:
+            for choice in response.output.get("choices", []) or []:
+                content = choice.get("message", {}).get("content", [])
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict) and item.get("audio"):
+                            return item["audio"]
+                elif isinstance(content, str) and content.startswith("http"):
+                    return content
+        except (AttributeError, TypeError):
+            pass
+        return None
+
     def _synth_chunks(self, chunks: list[str]) -> list[str]:
         """One DashScope call per chunk; returns the saved part WAV paths."""
         import dashscope
 
         dashscope.base_http_api_url = self.base_url
-        from dashscope.audio.qwen_tts import SpeechSynthesizer
+        instruct = self.model.startswith("qwen3-tts-instruct")
+        if instruct:
+            from dashscope import MultiModalConversation
+        else:
+            from dashscope.audio.qwen_tts import SpeechSynthesizer
 
         part_paths = []
         for i, chunk in enumerate(chunks):
@@ -196,12 +270,35 @@ class TTSEngine(TTSInterface):
             )
             t1 = time.time()
             try:
-                response = SpeechSynthesizer.call(
-                    model=self.model,
-                    api_key=self.api_key,
-                    text=chunk,
-                    voice=self.voice,
-                )
+                if instruct:
+                    kwargs = dict(
+                        model=self.model,
+                        api_key=self.api_key,
+                        text=chunk,
+                        voice=self.voice,
+                        instructions=self.instructions or _DEFAULT_INSTRUCTIONS,
+                        optimize_instructions=self.optimize_instructions,
+                        stream=False,
+                    )
+                    lang = self._resolve_language_type(chunk)
+                    if lang:
+                        kwargs["language_type"] = lang
+                    response = MultiModalConversation.call(**kwargs)
+                    url = self._extract_audio_url(response)
+                    if url is None:
+                        raise RuntimeError(
+                            f"Qwen3-TTS API returned no audio: {response}"
+                        )
+                else:
+                    response = SpeechSynthesizer.call(
+                        model=self.model,
+                        api_key=self.api_key,
+                        text=chunk,
+                        voice=self.voice,
+                    )
+                    url = response.output["audio"]["url"]
+            except RuntimeError:
+                raise
             except Exception as e:
                 raise ConnectionError(f"Qwen3-TTS API request failed: {e}") from e
 
@@ -210,7 +307,6 @@ class TTSEngine(TTSInterface):
                     f"Qwen3-TTS API error ({response.status_code}): "
                     f"{getattr(response, 'message', '')}"
                 )
-            url = response.output["audio"]["url"]
             part_dir = Path("cache")
             part_dir.mkdir(exist_ok=True, parents=True)
             part = part_dir / f"qwen_part_{i:02d}.wav"

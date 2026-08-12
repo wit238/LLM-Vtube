@@ -812,12 +812,15 @@ class QwenTTSConfig(I18nMixin):
     """
 
     api_key: str = Field("", alias="api_key")
-    model: str = Field("qwen3-tts-flash-2025-11-27", alias="model")
+    model: str = Field("qwen3-tts-instruct-flash", alias="model")
     voice: str = Field("Cherry", alias="voice")
     base_url: str = Field(
         "https://dashscope-intl.aliyuncs.com/api/v1", alias="base_url"
     )
     max_chars: int = Field(1200, alias="max_chars")
+    language_type: str = Field("", alias="language_type")
+    instructions: str = Field("", alias="instructions")
+    optimize_instructions: bool = Field(True, alias="optimize_instructions")
     timeout: float = Field(120.0, alias="timeout")
     trim_audio: bool = Field(True, alias="trim_audio")
     trim_model: str = Field("small", alias="trim_model")
@@ -838,8 +841,8 @@ class QwenTTSConfig(I18nMixin):
             zh="DashScope API 密钥（或设置 DASHSCOPE_API_KEY 环境变量；支持 ${DASHSCOPE_API_KEY} 替换）",
         ),
         "model": Description(
-            en="Qwen-TTS model id (e.g. qwen3-tts-flash-2025-11-27)",
-            zh="Qwen-TTS 模型 ID（如 qwen3-tts-flash-2025-11-27）",
+            en="Qwen-TTS model id (e.g. qwen3-tts-instruct-flash; qwen3-tts-flash-2025-11-27 for the non-instruct API)",
+            zh="Qwen-TTS 模型 ID（如 qwen3-tts-instruct-flash；qwen3-tts-flash-2025-11-27 为旧的非 instruct API）",
         ),
         "voice": Description(
             en="Preset voice name (e.g. Cherry, Serena)", zh="预设音色名称（如 Cherry、Serena）"
@@ -851,6 +854,17 @@ class QwenTTSConfig(I18nMixin):
         "max_chars": Description(
             en="Max text chars per API call; longer replies are split and concatenated",
             zh="每次 API 调用的最大字符数；更长的回复会被拆分后拼接",
+        ),
+        "language_type": Description(
+            en="Speech language for the instruct model (e.g. 'Japanese', 'Thai'; empty = auto-detect from text)",
+            zh="instruct 模型的语音语言（如 'Japanese'、'Thai'；留空则根据文本自动检测）",
+        ),
+        "instructions": Description(
+            en="Voice style instructions for the instruct model (empty = engine default: cute anime girl)",
+            zh="instruct 模型的语音风格指令（留空则使用引擎默认：可爱的动漫女孩）",
+        ),
+        "optimize_instructions": Description(
+            en="Let the API optimize the instructions", zh="让 API 优化指令"
         ),
         "timeout": Description(
             en="HTTP timeout in seconds for one synthesis call",
