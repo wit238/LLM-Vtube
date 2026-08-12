@@ -29,7 +29,7 @@ from .conversations.conversation_handler import (
 )
 from .conversations.tts_manager import TTSTaskManager
 from .agent.output_types import DisplayText
-from .conversations.faq_handler import GREETING_AUDIO_PATH
+from .conversations.faq_handler import GREETING_AUDIO_PATH, reset_faq_cooldown
 
 
 class MessageType(Enum):
@@ -561,8 +561,11 @@ class WebSocketHandler:
                 )
             )
         # New chat = fresh session: re-enable the FAQ handler so scripted
-        # answers work again (it may have been toggled off mid-session).
+        # answers work again (it may have been toggled off mid-session), and
+        # drop the repeat-answer cooldown so previously-answered FAQs can
+        # trigger again right away.
         context.character_config.faq_enabled = True
+        reset_faq_cooldown()
         await websocket.send_text(
             json.dumps({"type": "faq-config", "enabled": True})
         )
@@ -683,6 +686,8 @@ class WebSocketHandler:
             return
         enabled = bool(data.get("enabled", True))
         context.character_config.faq_enabled = enabled
+        if enabled:
+            reset_faq_cooldown()
         logger.info(
             f"FAQ Handler {'enabled' if enabled else 'disabled'} "
             f"for client {client_uid}"

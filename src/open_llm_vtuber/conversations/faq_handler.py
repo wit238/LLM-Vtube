@@ -15,6 +15,16 @@ GREETING_AUDIO_PATH = str(AUDIO_DIR / "greeting.mp3")
 FAQ_REPEAT_COOLDOWN_SECONDS = 600.0
 _recent_faq_triggers: Dict[str, float] = {}
 
+
+def reset_faq_cooldown() -> None:
+    """Clear the repeat-answer cooldown so every FAQ can trigger again.
+
+    Called when a new chat session starts (or the handler is re-enabled), so
+    the "+" button makes scripted answers available immediately even if the
+    same question was asked within the cooldown window.
+    """
+    _recent_faq_triggers.clear()
+
 _ASCII_RE = re.compile(r"[A-Za-z0-9]")
 
 # Generic / ambiguous keywords. They appear as substrings inside *other* intents
