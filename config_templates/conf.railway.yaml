@@ -4,14 +4,12 @@
 #
 # Required Railway service variables (set in Railway dashboard):
 #   OPENCODE_API_KEY  - LLM gateway key (https://opencode.ai)
-#   JAITTS_SERVER_DIR- dir containing the JaiTTS server_local.py + .venv
 # Optional:
 #   FISH_API_KEY, ELEVENLABS_API_KEY
-#   JAITTS_REF_AUDIO - override the reference voice WAV (default: assets/jaitts/ref.wav)
 #
-# NOTE: JaiTTS/Typhoon require GPU + a local JaiTTS server. On Railway
-# without GPU, keep auto_start:true only if a JaiTTS server is reachable;
-# otherwise set 'auto_start: false' and point api_url to an external one.
+# NOTE: JaiTTS runs as a LOCAL server (127.0.0.1:8021, jaitts_modal project)
+# and Typhoon ASR need a GPU - neither is available on Railway, so on
+# Railway JaiTTS always falls back to edge_tts automatically.
 # ---------------------------------------------------------------------------
 
 # System Settings: Setting related to the initialization of the server
@@ -361,8 +359,9 @@ character_config:
 
   # =================== Text to Speech ===================
   tts_config:
-    # JaiTTS (F5-TTS) Thai zero-shot voice cloning hosted on Modal (cloud GPU).
-    # Deploy once: cd jaitts_modal && uv run modal deploy main.py
+    # JaiTTS runs as a LOCAL server (127.0.0.1:8021) in the jaitts_modal
+    # project - NOT reachable from Railway. On Railway, JaiTTS fails fast
+    # and the edge_tts fallback takes over automatically.
     tts_model: 'jaitts_tts'
     # text to speech model options:
     #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
@@ -374,15 +373,15 @@ character_config:
       # JaiTTS (F5-TTS) Thai zero-shot voice cloning via the local JaiTTS server.
       # auto_start: spawns the JaiTTS server (jaitts_modal CUDA venv) automatically
       # when the VTuber server starts; it is stopped again on exit.
-      # Deployed on Modal (cloud GPU) - see the jaitts_modal project's main.py.
-      # Paste the URL printed by `modal deploy main.py` here.
-      api_url: 'https://YOUR_WORKSPACE--jaitts-tts.web.modal.run/synthesize'
+      # Railway has no access to a localhost server - the edge_tts fallback
+      # below kicks in automatically there.
+      api_url: 'http://127.0.0.1:8021/synthesize'
       ref_audio_path: 'assets/jaitts/ref.wav'
       ref_text: 'แต่ว่าขอบคุณนะ วันนี้จะเล่นอะไรดี มาเล่นเกมกันเถอะ มีลิชนะขาดอยู่แล้ว เอ๊ะ แพ้แล้ว ไม่จริง แบบนี้มันโกงกันนี่ ขออีกตา ตานี้สุดท้ายจริงๆ นะ อะฮ่าฮ่า เย้'
       speed: 1.0 # Speech speed multiplier
       seed: -1 # Fixed seed = reproducible output; -1 = random
       timeout: 300.0 # HTTP timeout in seconds for one synthesis call
-      auto_start: false # Modal hosts the server - no local auto-start needed
+      auto_start: false # Railway has no local JaiTTS server - fallback edge_tts is used
       server_dir: '' # Only used with auto_start: true (local jaitts_modal venv)
       # Fallback TTS used automatically when JaiTTS is unreachable/not deployed.
       # '' = no fallback (TTS error is raised). Otherwise the engine name.
