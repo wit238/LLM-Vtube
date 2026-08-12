@@ -1,4 +1,4 @@
-# config_manager/tts.py
+﻿# config_manager/tts.py
 from pydantic import ValidationInfo, Field, model_validator
 from typing import Literal, Optional, Dict, ClassVar
 from .i18n import I18nMixin, Description
@@ -692,7 +692,7 @@ class JaiTTSTTSConfig(I18nMixin):
     """Configuration for JaiTTS (F5-TTS Thai zero-shot voice cloning).
 
     The engine is an HTTP client for the local JaiTTS server
-    (jaitts_modal/server_local.py, started via start_jaitts_server.bat).
+    (jaitts_tools/server_local.py, started via start_jaitts_server.bat).
     """
 
     api_url: str = Field("http://127.0.0.1:8021/synthesize", alias="api_url")

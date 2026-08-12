@@ -1,6 +1,6 @@
-"""JaiTTS (F5-TTS, Thai zero-shot voice cloning) TTS engine.
+﻿"""JaiTTS (F5-TTS, Thai zero-shot voice cloning) TTS engine.
 
-HTTP client for a local JaiTTS server (see the `jaitts_modal` project's
+HTTP client for a local JaiTTS server (see the `jaitts_tools` project's
 `server_local.py`). The server keeps the CUDA pipeline loaded; this engine
 just POSTs the text + reference voice and saves the returned WAV.
 """
@@ -117,7 +117,8 @@ class TTSEngine(TTSInterface):
             except httpx.HTTPError as e:
                 raise ConnectionError(
                     f"JaiTTS server unreachable at {self.api_url}. "
-                    "Deploy it with: cd jaitts_modal && uv run modal deploy main.py"
+                    "Start it with start_jaitts_server.bat in the "
+                    "'jaitts_tools' project (or enable auto_start in conf.yaml)"
                 ) from e
 
             resp.raise_for_status()
@@ -178,7 +179,7 @@ class TTSEngine(TTSInterface):
     def _trim_wav(self, out_file: str, text: str) -> None:
         """Post-process the generated WAV: cut leading garbage / trailing
         noise with faster-whisper word timestamps (same method as the
-        jaitts_modal project's trim_leading.py)."""
+        jaitts_tools project's trim_leading.py)."""
         try:
             from ..utils.audio_trim import trim_wav_file, read_wav
         except Exception as e:

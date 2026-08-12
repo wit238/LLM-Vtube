@@ -1,4 +1,4 @@
-# ===========================
+﻿# ===========================
 # 这是中文版本的配置文件。
 # 一些配置项被调整成了适合中文用户的预设配置，方便无脑开玩。
 # 如果你希望使用英文版本，请用 config_templates/conf.default.yaml 的内容替换本文件。
@@ -307,7 +307,7 @@ character_config:
       server_dir: '' # 服务器目录（server_local.py + .venv）。留空则自动从 ref_audio_path 所在目录推导
       server_startup_timeout: 300 # 等待模型加载就绪的超时秒数
       # 后处理生成的 WAV，裁掉开头杂音/结尾噪音
-      # （与 jaitts_modal 的 trim_leading.py 相同：用 faster-whisper 词级时间戳对照文本对齐）
+      # （与 jaitts_tools 的 trim_leading.py 相同：用 faster-whisper 词级时间戳对照文本对齐）
       trim_audio: true
       trim_model: 'small' # 用于裁剪的 faster-whisper 模型大小
       trim_device: 'cpu' # 建议 'cpu'，避免与 JaiTTS 的 CUDA 管线争抢

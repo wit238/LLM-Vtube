@@ -1,6 +1,6 @@
-"""Post-processing: trim leading garbage / trailing noise from generated WAVs.
+﻿"""Post-processing: trim leading garbage / trailing noise from generated WAVs.
 
-Ported from the `jaitts_modal` project's `trim_leading.py`. Uses faster-whisper
+Ported from the `jaitts_tools` project's `trim_leading.py`. Uses faster-whisper
 with `word_timestamps=True` to locate the words, aligns the transcript against
 the expected spoken text with difflib, then cuts audio before the first matched
 word and after the last matched word. Falls back to an energy-based trailing

@@ -7,7 +7,7 @@
 # Optional:
 #   FISH_API_KEY, ELEVENLABS_API_KEY
 #
-# NOTE: JaiTTS runs as a LOCAL server (127.0.0.1:8021, jaitts_modal project)
+# NOTE: JaiTTS runs as a LOCAL server (127.0.0.1:8021, jaitts_tools project)
 # and Typhoon ASR need a GPU - neither is available on Railway, so on
 # Railway JaiTTS always falls back to edge_tts automatically.
 # ---------------------------------------------------------------------------
@@ -359,7 +359,7 @@ character_config:
 
   # =================== Text to Speech ===================
   tts_config:
-    # JaiTTS runs as a LOCAL server (127.0.0.1:8021) in the jaitts_modal
+    # JaiTTS runs as a LOCAL server (127.0.0.1:8021) in the jaitts_tools
     # project - NOT reachable from Railway. On Railway, JaiTTS fails fast
     # and the edge_tts fallback takes over automatically.
     tts_model: 'jaitts_tts'
@@ -371,7 +371,7 @@ character_config:
 
     jaitts_tts:
       # JaiTTS (F5-TTS) Thai zero-shot voice cloning via the local JaiTTS server.
-      # auto_start: spawns the JaiTTS server (jaitts_modal CUDA venv) automatically
+      # auto_start: spawns the JaiTTS server (jaitts_tools CUDA venv) automatically
       # when the VTuber server starts; it is stopped again on exit.
       # Railway has no access to a localhost server - the edge_tts fallback
       # below kicks in automatically there.
@@ -383,7 +383,7 @@ character_config:
       nfe_step: 24 # Flow-matching ODE steps: 24 = fast with no quality loss; 16 = ~2.4x faster (slight babble possible)
       timeout: 300.0 # HTTP timeout in seconds for one synthesis call
       auto_start: false # Railway has no local JaiTTS server - fallback edge_tts is used
-      server_dir: '' # Only used with auto_start: true (local jaitts_modal venv)
+      server_dir: '' # Only used with auto_start: true (local jaitts_tools venv)
       # Fallback TTS used automatically when JaiTTS is unreachable/not deployed.
       # '' = no fallback (TTS error is raised). Otherwise the engine name.
       fallback_tts: 'edge_tts'
@@ -392,7 +392,7 @@ character_config:
       fallback_rate: '-14%'
       server_startup_timeout: 300 # Max seconds to wait for the model to load before giving up
       # Post-process the generated WAV to cut leading garbage / trailing noise
-      # (same method as jaitts_modal trim_leading.py: faster-whisper word
+      # (same method as jaitts_tools trim_leading.py: faster-whisper word
       # timestamps aligned against the spoken text).
       trim_audio: true
       trim_model: 'small' # faster-whisper model size used for trimming

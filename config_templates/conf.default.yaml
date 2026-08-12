@@ -311,7 +311,7 @@ character_config:
       server_dir: '' # Server folder (server_local.py + .venv). Empty = auto-detect next to ref_audio_path
       server_startup_timeout: 300 # Max seconds to wait for the model to load before giving up
       # Post-process the generated WAV to cut leading garbage / trailing noise
-      # (same method as jaitts_modal trim_leading.py: faster-whisper word
+      # (same method as jaitts_tools trim_leading.py: faster-whisper word
       # timestamps aligned against the spoken text).
       trim_audio: true
       trim_model: 'small' # faster-whisper model size used for trimming

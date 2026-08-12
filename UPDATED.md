@@ -1,4 +1,4 @@
-# UPDATED.md — สรุปทุกสิ่งที่เพิ่ม/แก้ไขในโปรเจกต์ (ไล่ตามช่วงเวลา)
+﻿# UPDATED.md — สรุปทุกสิ่งที่เพิ่ม/แก้ไขในโปรเจกต์ (ไล่ตามช่วงเวลา)
 
 เอกสารนี้สรุปงานทั้งหมดที่ทำใน **Open-LLM-VTuber** โฟลเดอร์นี้ ตั้งแต่
 เริ่มอินทิเกรต JaiTTS จนถึงระบบ RAG — เรียงตามลำดับจริงที่ทำ
@@ -18,11 +18,11 @@
 - **แก้**: `run_server.py`
 - เพิ่ม `ensure_jaitts_server(config)` — ถ้า config เลือก `jaitts_tts` และ `auto_start: true`:
   - เช็ค `/health` ก่อน ถ้า healthy แล้ว → ข้าม
-  - spawn ตัว `server_local.py` ของโปรเจกต์ `jaitts_modal` (ใช้ **CUDA venv แยกของตัวเอง**) เป็น subprocess
+  - spawn ตัว `server_local.py` ของโปรเจกต์ `jaitts_tools` (ใช้ **CUDA venv แยกของตัวเอง**) เป็น subprocess
   - `CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW` (Windows), log ไป `logs/jaitts_server.log`
   - **กันการชนกันของ HF cache**: ลบ `HF_HOME`/`HF_HUB_CACHE`/`MODELSCOPE_CACHE` ออกจาก child env เพราะ JaiTTS ใช้ cache เริ่มต้นของตัวเอง
   - คอย health check จนพร้อม (default timeout 300s) → `stop_jaitts_server()` ลงทะเบียน `atexit`
-- โฟลเดอร์ server หาได้จาก `server_dir` หรือเดาจาก `ref_audio_path` (เช่น `C:\Users\jirathx\Documents\Default Project\jaitts_modal`)
+- โฟลเดอร์ server หาได้จาก `server_dir` หรือเดาจาก `ref_audio_path` (เช่น `jaitts_tools`)
 
 ### 1.3 แก้ห่วง JaiTTS server ค้าง/ล็อกไฟล์ log
 - ปัญหา: process cmd เก่า (PID 17424) ค้างที่หน้าจอ *"Terminate batch job (Y/N)?"* แล้วล็อกไฟล์ `jaitts_server.log` ตลอด
@@ -32,7 +32,7 @@
 - **ไฟล์**: `config_manager/tts.py` → คลาส `JaiTTSTTSConfig` (i18n description en/zh)
 - field: `api_url`, `ref_audio_path` (required), `ref_text`, `speed` (default 1.0), `seed` (-1), `timeout` (300s), `auto_start` (true), `server_dir`, `server_startup_timeout` (300s)
 - `conf.yaml` + templates เพิ่มบล็อก `jaitts_tts:`
-- **ค่าจริงในเครื่อง**: `ref_audio_path: C:\Users\jirathx\Documents\Default Project\jaitts_modal\ref.wav` + ref_text ภาษาไทย (เสียง voice clone ของ "มาลี"), `server_dir: ...\jaitts_modal`, `auto_start: true`
+- **ค่าจริงในเครื่อง**: `ref_audio_path: jaitts_tools\ref.wav` + ref_text ภาษาไทย (เสียง voice clone ของ "มาลี"), `server_dir: ...\jaitts_tools`, `auto_start: true`
 
 ---
 
@@ -66,7 +66,7 @@
 ## ช่วงที่ 4: Auto-trim เสียง WAV ที่ออกจาก JaiTTS
 
 ### 4.1 สร้าง `utils/audio_trim.py`
-- **Port จาก** `C:\Users\jirathx\Documents\Default Project\jaitts_modal\trim_leading.py`
+- **Port จาก** `jaitts_tools\trim_leading.py`
 - วิธี: `faster-whisper` `word_timestamps=True` → transcript ไทย → จับคู่กับข้อความต้นฉบับด้วย `difflib.SequenceMatcher` → ตัดก่อนคำแรกที่ match และหลังคำสุดท้ายที่ match
 - Fallback: ตัด tail noise ด้วยพลังงาน (`trailing_energy_start`) เมื่อหา end-word ไม่เจอ
 - **Safety**:
@@ -189,8 +189,8 @@
 ## ช่วงที่ 8: เร่งความเร็ว JaiTTS (nfe_step) + JaiTTS เป็น local เต็มรูปแบบ
 
 ### 8.1 JaiTTS เป็น local (ไม่ใช้ Modal)
-- `conf.yaml`: `api_url: 'http://127.0.0.1:8021/synthesize'`, `auto_start: true`, `server_dir: C:\Users\jirathx\Documents\Default Project\jaitts_modal`
-- `run_server.py ensure_jaitts_server` spawn `server_local.py` (CUDA venv ของ jaitts_modal) → health check → พร้อม ~70s; ปิด server → ปิดตาม
+- `conf.yaml`: `api_url: 'http://127.0.0.1:8021/synthesize'`, `auto_start: true`, `server_dir: jaitts_tools`
+- `run_server.py ensure_jaitts_server` spawn `server_local.py` (CUDA venv ของ jaitts_tools) → health check → พร้อม ~70s; ปิด server → ปิดตาม
 - Railway เข้า localhost ไม่ได้ → edge_tts fallback อัตโนมัติ (แก้ comment ใน railway template)
 
 ### 8.2 nfe_step (flow-matching ODE steps) — ตัวหลักของการเร่ง

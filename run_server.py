@@ -100,7 +100,7 @@ def _detect_jaitts_device(venv_python: Path) -> str:
 def ensure_jaitts_server(config: Config) -> None:
     """Auto-start the local JaiTTS server when jaitts_tts is selected.
 
-    Uses the jaitts_modal project's own CUDA venv (a separate Python env).
+    Uses the jaitts_tools project's own CUDA venv (a separate Python env).
     The server dir is taken from `server_dir`, or derived from the parent of
     `ref_audio_path`. Skips silently if the server is already healthy.
 
@@ -125,14 +125,21 @@ def ensure_jaitts_server(config: Config) -> None:
         logger.info("JaiTTS server already running - skipping auto-start.")
         return
 
+    def _abs(path: Path) -> Path:
+        """Resolve relative paths against the run_server.py directory so
+        spawning the JaiTTS server (cwd=server_dir) never double-resolves."""
+        return path if path.is_absolute() else Path(__file__).resolve().parent / path
+
     server_dir = (
-        Path(os.path.expandvars(jcfg.server_dir)).expanduser()
+        _abs(Path(os.path.expandvars(jcfg.server_dir)).expanduser())
         if jcfg.server_dir
         else Path("")
     )
     if not server_dir.is_dir():
-        ref_parent = Path(os.path.expandvars(jcfg.ref_audio_path)).expanduser().parent
-        for candidate in (ref_parent, ref_parent / "jaitts_modal"):
+        ref_parent = _abs(
+            Path(os.path.expandvars(jcfg.ref_audio_path)).expanduser().parent
+        )
+        for candidate in (ref_parent, ref_parent / "jaitts_tools"):
             if (candidate / "server_local.py").exists():
                 server_dir = candidate
                 break
