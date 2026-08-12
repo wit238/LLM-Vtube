@@ -7,6 +7,7 @@ connected clients share a single instance.
 """
 
 import threading
+from pathlib import Path
 
 import numpy as np
 from loguru import logger
@@ -14,6 +15,18 @@ from loguru import logger
 _model = None
 _tokenizer = None
 _load_lock = threading.Lock()
+
+# HF hub caches use symlinks which fail on some Windows setups (WinError
+# 1314). We keep a plain-copy local mirror under models/<model-name> and
+# prefer it when present so no network/symlink is ever needed at runtime.
+_MODEL_DIR = Path(__file__).parent.parent.parent.parent / "models"
+
+
+def _resolve_model_path(model_name: str) -> str:
+    local = _MODEL_DIR / model_name.split("/")[-1]
+    if (local / "config.json").is_file() and (local / "model.safetensors").is_file():
+        return str(local)
+    return model_name
 
 
 def _load(model_name: str, device: str):
@@ -23,11 +36,12 @@ def _load(model_name: str, device: str):
             return _model, _tokenizer
         from transformers import AutoModel, AutoTokenizer
 
+        resolved = _resolve_model_path(model_name)
         logger.info(
-            f"knowledge: loading embedding model '{model_name}' on {device} ..."
+            f"knowledge: loading embedding model '{resolved}' on {device} ..."
         )
-        _tokenizer = AutoTokenizer.from_pretrained(model_name)
-        _model = AutoModel.from_pretrained(model_name)
+        _tokenizer = AutoTokenizer.from_pretrained(resolved)
+        _model = AutoModel.from_pretrained(resolved)
         _model.eval()
         _model.to(device)
         logger.info("knowledge: embedding model ready")

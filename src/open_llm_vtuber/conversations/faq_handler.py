@@ -129,6 +129,63 @@ def _load_faq_list() -> list[dict]:
 # always spoken through TTS (never pre-rendered audio files).
 FAQ_LIST = _load_faq_list()
 
+# ---- Semantic matching (conference-style) ----
+# When the keyword scorer misses, embed the user's question and compare it
+# against the scripted questions (same embedding model as the RAG knowledge
+# base - BAAI/bge-m3, cached as a singleton, so warm embeds take ~0.1s).
+# Calibrated against 10 real probes: true paraphrases score 0.83-0.90 while
+# unrelated Thai sentences max out at ~0.73 (bge-m3 inflates short-sentence
+# similarity), so 0.80 + a 0.05 margin over the runner-up cleanly separates
+# conference-style follow-ups from chit-chat.
+_SEMANTIC_THRESHOLD = 0.80  # bge-m3 cosine similarity
+_SEMANTIC_MARGIN = 0.05  # top score must beat runner-up by at least this
+_semantic_vectors = None  # (N, D) float32, L2-normalized
+_semantic_ready = False
+
+
+def _load_semantic_vectors() -> None:
+    """Embed every FAQ's primary question once (lazy, cached)."""
+    global _semantic_vectors, _semantic_ready
+    if _semantic_ready:
+        return
+    _semantic_ready = True
+    if not FAQ_LIST:
+        return
+    try:
+        from ..knowledge.embedder import embed_texts
+
+        questions = [faq["keywords"][0] for faq in FAQ_LIST]
+        _semantic_vectors = embed_texts(questions)
+        logger.info(
+            f"faq_handler: semantic vectors ready ({len(questions)} questions)"
+        )
+    except Exception as e:
+        logger.warning(
+            f"faq_handler: semantic matching unavailable ({e}) - "
+            "keyword matching only"
+        )
+
+
+def _semantic_match(text: str):
+    """Return (faq, cosine_score) for the closest scripted question, or None."""
+    _load_semantic_vectors()
+    if _semantic_vectors is None:
+        return None
+    try:
+        from ..knowledge.embedder import embed_texts
+
+        q = embed_texts([text])[0]
+        scores = _semantic_vectors @ q
+        order = scores.argsort()[::-1]
+        idx = int(order[0])
+        score = float(scores[idx])
+        second = float(scores[order[1]]) if len(order) > 1 else 0.0
+        if score >= _SEMANTIC_THRESHOLD and (score - second) >= _SEMANTIC_MARGIN:
+            return FAQ_LIST[idx], score
+    except Exception as e:
+        logger.warning(f"faq_handler: semantic match failed ({e})")
+    return None
+
 
 def _find_substring(kw: str, text: str) -> bool:
     """Find keyword in text.
@@ -275,4 +332,31 @@ def match_faq(
         )
         return best_match
 
+    # Conference-style fallback: no keyword hit, but the user's question is
+    # semantically similar to a scripted one -> answer from MainConversation.md.
+    sem = _semantic_match(clean_text)
+    if sem is not None:
+        best_match, cos = sem
+        faq_id = best_match["id"]
+        now = time.monotonic()
+        last = _recent_faq_triggers.get(faq_id)
+        if last is not None and (now - last) < FAQ_REPEAT_COOLDOWN_SECONDS:
+            logger.info(
+                f"♻️ FAQ {faq_id} repeated within {FAQ_REPEAT_COOLDOWN_SECONDS:.0f}s "
+                "cooldown — deferring to the real LLM"
+            )
+            return None
+        _recent_faq_triggers[faq_id] = now
+        logger.info(
+            f"🎯 FAQ Match found (semantic): {faq_id} "
+            f"(cosine {cos:.2f} >= {_SEMANTIC_THRESHOLD:.2f})"
+        )
+        return best_match
+
     return None
+
+
+# Pre-warm the semantic vectors at import time so the first conference-style
+# question doesn't pay the ~10s embedding cost (the model itself is already
+# loaded by the RAG knowledge base, which shares the same singleton).
+_load_semantic_vectors()
