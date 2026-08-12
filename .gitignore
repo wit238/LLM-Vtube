@@ -14,6 +14,7 @@ api_keys.py
 user_credentials.json
 src/open_llm_vtuber/llm/user_credentials.json
 mcp_servers.json
+dashscope_key.txt
 
 # User Configurations & Backups
 conf.yaml.backup*

@@ -804,6 +804,105 @@ class JaiTTSTTSConfig(I18nMixin):
     }
 
 
+class QwenTTSConfig(I18nMixin):
+    """Configuration for Qwen3-TTS (DashScope / Alibaba Model Studio).
+
+    Cloud TTS via the DashScope qwen-tts API - no GPU or local server
+    needed. Voice cloning done by the service; use a preset voice.
+    """
+
+    api_key: str = Field("", alias="api_key")
+    model: str = Field("qwen3-tts-flash-2025-11-27", alias="model")
+    voice: str = Field("Cherry", alias="voice")
+    base_url: str = Field(
+        "https://dashscope-intl.aliyuncs.com/api/v1", alias="base_url"
+    )
+    max_chars: int = Field(1200, alias="max_chars")
+    timeout: float = Field(120.0, alias="timeout")
+    trim_audio: bool = Field(True, alias="trim_audio")
+    trim_model: str = Field("small", alias="trim_model")
+    trim_device: str = Field("cpu", alias="trim_device")
+    trim_compute_type: str = Field("int8", alias="trim_compute_type")
+    trim_download_root: str = Field("models/whisper", alias="trim_download_root")
+    trim_headroom: float = Field(0.10, alias="trim_headroom")
+    trim_tail_margin: float = Field(0.15, alias="trim_tail_margin")
+    trim_min_cut: float = Field(0.30, alias="trim_min_cut")
+    fallback_tts: str = Field("", alias="fallback_tts")
+    fallback_voice: str = Field("th-TH-PremwadeeNeural", alias="fallback_voice")
+    fallback_pitch: str = Field("+10Hz", alias="fallback_pitch")
+    fallback_rate: str = Field("-14%", alias="fallback_rate")
+
+    DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
+        "api_key": Description(
+            en="DashScope API key (or set the DASHSCOPE_API_KEY env var; supports ${DASHSCOPE_API_KEY} substitution)",
+            zh="DashScope API 密钥（或设置 DASHSCOPE_API_KEY 环境变量；支持 ${DASHSCOPE_API_KEY} 替换）",
+        ),
+        "model": Description(
+            en="Qwen-TTS model id (e.g. qwen3-tts-flash-2025-11-27)",
+            zh="Qwen-TTS 模型 ID（如 qwen3-tts-flash-2025-11-27）",
+        ),
+        "voice": Description(
+            en="Preset voice name (e.g. Cherry, Serena)", zh="预设音色名称（如 Cherry、Serena）"
+        ),
+        "base_url": Description(
+            en="DashScope API base URL (use dashscope-intl for international accounts)",
+            zh="DashScope API 基础 URL（国际账号使用 dashscope-intl）",
+        ),
+        "max_chars": Description(
+            en="Max text chars per API call; longer replies are split and concatenated",
+            zh="每次 API 调用的最大字符数；更长的回复会被拆分后拼接",
+        ),
+        "timeout": Description(
+            en="HTTP timeout in seconds for one synthesis call",
+            zh="单次合成的 HTTP 超时（秒）",
+        ),
+        "trim_audio": Description(
+            en="Post-process generated WAVs with faster-whisper to cut leading garbage / trailing noise",
+            zh="用 faster-whisper 后处理生成的 WAV，裁掉开头杂音/结尾噪音",
+        ),
+        "trim_model": Description(
+            en="faster-whisper model size used for trimming (e.g. 'small')",
+            zh="用于裁剪的 faster-whisper 模型大小（如 'small'）",
+        ),
+        "trim_device": Description(
+            en="Device for the trim model (e.g. 'cpu')", zh="裁剪模型的设备（如 'cpu'）"
+        ),
+        "trim_compute_type": Description(
+            en="Compute type for the trim model (e.g. 'int8', 'float16')",
+            zh="裁剪模型的计算类型（如 'int8'、'float16'）",
+        ),
+        "trim_download_root": Description(
+            en="Directory where the trim model is downloaded/cached",
+            zh="裁剪模型的下载/缓存目录",
+        ),
+        "trim_headroom": Description(
+            en="Seconds of audio kept before the first matched word",
+            zh="第一个匹配词之前保留的音频秒数",
+        ),
+        "trim_tail_margin": Description(
+            en="Seconds of audio kept after the last matched word",
+            zh="最后一个匹配词之后保留的音频秒数",
+        ),
+        "trim_min_cut": Description(
+            en="Minimum garbage seconds before a cut is applied",
+            zh="触发剪切前的最少杂音秒数",
+        ),
+        "fallback_tts": Description(
+            en="Fallback TTS engine used when Qwen3-TTS fails (e.g. 'edge_tts'; '' = no fallback)",
+            zh="Qwen3-TTS 失败时使用的备用 TTS 引擎（如 'edge_tts'；'' 表示不启用）",
+        ),
+        "fallback_voice": Description(
+            en="Voice used by the fallback TTS engine", zh="备用 TTS 引擎使用的音色"
+        ),
+        "fallback_pitch": Description(
+            en="Pitch used by the fallback TTS engine", zh="备用 TTS 引擎使用的音高"
+        ),
+        "fallback_rate": Description(
+            en="Speaking rate used by the fallback TTS engine", zh="备用 TTS 引擎使用的语速"
+        ),
+    }
+
+
 class TTSConfig(I18nMixin):
     """Configuration for Text-to-Speech."""
 
@@ -826,6 +925,7 @@ class TTSConfig(I18nMixin):
         "elevenlabs_tts",
         "cartesia_tts",
         "piper_tts",
+        "qwen_tts",
         "jaitts_tts",
     ] = Field(..., alias="tts_model")
 
@@ -851,6 +951,7 @@ class TTSConfig(I18nMixin):
     elevenlabs_tts: ElevenLabsTTSConfig | None = Field(None, alias="elevenlabs_tts")
     cartesia_tts: CartesiaTTSConfig | None = Field(None, alias="cartesia_tts")
     piper_tts: Optional[PiperTTSConfig] = Field(None, alias="piper_tts")
+    qwen_tts: Optional[QwenTTSConfig] = Field(None, alias="qwen_tts")
     jaitts_tts: Optional[JaiTTSTTSConfig] = Field(None, alias="jaitts_tts")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
@@ -895,6 +996,9 @@ class TTSConfig(I18nMixin):
             en="Configuration for Cartesia TTS", zh="Cartesia TTS 配置"
         ),
         "piper_tts": Description(en="Configuration for Piper TTS", zh="Piper TTS 配置"),
+        "qwen_tts": Description(
+            en="Configuration for Qwen3-TTS (DashScope)", zh="Qwen3-TTS（DashScope）配置"
+        ),
         "jaitts_tts": Description(
             en="Configuration for JaiTTS (F5-TTS Thai)", zh="JaiTTS（泰语 F5-TTS）配置"
         ),
@@ -942,6 +1046,9 @@ class TTSConfig(I18nMixin):
 
         elif tts_model == "piper_tts" and values.piper_tts is not None:
             values.piper_tts.model_validate(values.piper_tts.model_dump())
+        elif tts_model == "qwen_tts" and values.qwen_tts is not None:
+            values.qwen_tts.model_validate(values.qwen_tts.model_dump())
+
         elif tts_model == "jaitts_tts" and values.jaitts_tts is not None:
             values.jaitts_tts.model_validate(values.jaitts_tts.model_dump())
         return values

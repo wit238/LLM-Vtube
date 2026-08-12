@@ -215,6 +215,31 @@ class TTSFactory:
                 normalize_audio=kwargs.get("normalize_audio"),
                 use_cuda=kwargs.get("use_cuda"),
             )
+        elif engine_type == "qwen_tts":
+            from .qwen_tts import TTSEngine as QwenTTSEngine
+
+            return QwenTTSEngine(
+                api_key=kwargs.get("api_key", ""),
+                model=kwargs.get("model", "qwen3-tts-flash-2025-11-27"),
+                voice=kwargs.get("voice", "Cherry"),
+                base_url=kwargs.get(
+                    "base_url", "https://dashscope-intl.aliyuncs.com/api/v1"
+                ),
+                max_chars=kwargs.get("max_chars", 1200),
+                timeout=kwargs.get("timeout", 120.0),
+                trim_audio=kwargs.get("trim_audio", True),
+                trim_model=kwargs.get("trim_model", "small"),
+                trim_device=kwargs.get("trim_device", "cpu"),
+                trim_compute_type=kwargs.get("trim_compute_type", "int8"),
+                trim_download_root=kwargs.get("trim_download_root", "models/whisper"),
+                trim_headroom=kwargs.get("trim_headroom", 0.10),
+                trim_tail_margin=kwargs.get("trim_tail_margin", 0.15),
+                trim_min_cut=kwargs.get("trim_min_cut", 0.30),
+                fallback_tts=kwargs.get("fallback_tts", ""),
+                fallback_voice=kwargs.get("fallback_voice", "th-TH-PremwadeeNeural"),
+                fallback_pitch=kwargs.get("fallback_pitch", "+10Hz"),
+                fallback_rate=kwargs.get("fallback_rate", "-14%"),
+            )
         elif engine_type == "jaitts_tts":
             from .jaitts_tts import TTSEngine as JaiTTSTTSEngine
 

@@ -293,7 +293,37 @@ character_config:
     #   'azure_tts', 'pyttsx3_tts', 'edge_tts', 'bark_tts',
     #   'cosyvoice_tts', 'melo_tts', 'coqui_tts', 'piper_tts',
     #   'fish_api_tts', 'x_tts', 'gpt_sovits_tts', 'sherpa_onnx_tts'
-    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts', 'jaitts_tts'
+    #   'minimax_tts', 'elevenlabs_tts', 'cartesia_tts', 'jaitts_tts',
+    #   'qwen_tts'
+
+    qwen_tts:
+      # Qwen3-TTS via DashScope (Alibaba Model Studio) - cloud TTS, no GPU,
+      # works locally and on Railway. Requires an International Model Studio
+      # API key: set the DASHSCOPE_API_KEY env var (or paste the key directly
+      # here - conf.yaml is gitignored).
+      api_key: '${DASHSCOPE_API_KEY}'
+      model: 'qwen3-tts-flash-2025-11-27' # qwen-tts models only
+      voice: 'Cherry' # preset voices: Cherry, Serena, ...
+      base_url: 'https://dashscope-intl.aliyuncs.com/api/v1' # use -intl for international accounts
+      max_chars: 1200 # max text chars per API call (longer replies are split + concatenated)
+      timeout: 120.0 # HTTP timeout in seconds for one synthesis call
+      # Fallback TTS used automatically when the API is unavailable.
+      # '' = no fallback (TTS error is raised). Otherwise the engine name.
+      fallback_tts: 'edge_tts'
+      fallback_voice: 'th-TH-PremwadeeNeural'
+      fallback_pitch: '+10Hz'
+      fallback_rate: '-14%'
+      # Post-process the generated WAV to cut leading garbage / trailing noise
+      # (same method as jaitts_tools trim_leading.py: faster-whisper word
+      # timestamps aligned against the spoken text).
+      trim_audio: true
+      trim_model: 'small' # faster-whisper model size used for trimming
+      trim_device: 'cpu' # 'cpu' recommended
+      trim_compute_type: 'int8'
+      trim_download_root: 'models/whisper' # Where the trim model is cached
+      trim_headroom: 0.10 # Seconds kept before the first matched word
+      trim_tail_margin: 0.15 # Seconds kept after the last matched word
+      trim_min_cut: 0.30 # Minimum garbage seconds before a cut is applied
 
     jaitts_tts:
       # JaiTTS (F5-TTS) Thai zero-shot voice cloning via the local JaiTTS server.

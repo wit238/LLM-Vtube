@@ -15,6 +15,15 @@ if "%OPENCODE_API_KEY%"=="" (
     )
 )
 
+rem If DASHSCOPE_API_KEY is not set, loads it from dashscope_key.txt (one line,
+rem gitignored) so Qwen3-TTS works without pasting the key into conf.yaml.
+if "%DASHSCOPE_API_KEY%"=="" (
+    if exist "dashscope_key.txt" (
+        set /p DASHSCOPE_API_KEY=<dashscope_key.txt
+        echo Loaded DASHSCOPE_API_KEY from dashscope_key.txt
+    )
+)
+
 
 echo Starting Open-LLM-VTuber server ...
 uv run run_server.py %*
