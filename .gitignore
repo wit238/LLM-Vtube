@@ -42,8 +42,8 @@ private/
 
 # Audio & Media Caches
 cache/*
-assets/faq_audio/*.bak
 !cache/README.md
+processed_*.wav
 
 # Models, Weights & Downloads
 models/*
@@ -80,6 +80,10 @@ env/
 .conda/
 conda/
 .pytest_cache/
+*.egg-info/
+
+# Local tool projects (not part of the app itself)
+jaitts_tools/
 
 # IDE & Operating System Files
 .DS_Store
