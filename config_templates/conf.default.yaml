@@ -319,7 +319,7 @@ character_config:
       # Post-process the generated WAV to cut leading garbage / trailing noise
       # (same method as jaitts_tools trim_leading.py: faster-whisper word
       # timestamps aligned against the spoken text).
-      trim_audio: true
+      trim_audio: false # faster-whisper post-processing - OFF for Qwen3-TTS (already clean); enables slower turns
       trim_model: 'small' # faster-whisper model size used for trimming
       trim_device: 'cpu' # 'cpu' recommended
       trim_compute_type: 'int8'

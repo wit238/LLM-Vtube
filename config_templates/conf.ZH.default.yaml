@@ -313,7 +313,7 @@ character_config:
       fallback_rate: '-14%'
       # 后处理生成的 WAV，裁掉开头杂音/结尾噪音
       # （与 jaitts_tools 的 trim_leading.py 相同：用 faster-whisper 词级时间戳对照文本对齐）
-      trim_audio: true
+      trim_audio: false # faster-whisper post-processing - OFF for Qwen3-TTS (already clean); enables slower turns
       trim_model: 'small' # 用于裁剪的 faster-whisper 模型大小
       trim_device: 'cpu' # 建议 'cpu'
       trim_compute_type: 'int8'

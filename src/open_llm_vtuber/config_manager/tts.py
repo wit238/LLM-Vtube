@@ -822,7 +822,7 @@ class QwenTTSConfig(I18nMixin):
     instructions: str = Field("", alias="instructions")
     optimize_instructions: bool = Field(True, alias="optimize_instructions")
     timeout: float = Field(120.0, alias="timeout")
-    trim_audio: bool = Field(True, alias="trim_audio")
+    trim_audio: bool = Field(False, alias="trim_audio")
     trim_model: str = Field("small", alias="trim_model")
     trim_device: str = Field("cpu", alias="trim_device")
     trim_compute_type: str = Field("int8", alias="trim_compute_type")
@@ -871,8 +871,8 @@ class QwenTTSConfig(I18nMixin):
             zh="单次合成的 HTTP 超时（秒）",
         ),
         "trim_audio": Description(
-            en="Post-process generated WAVs with faster-whisper to cut leading garbage / trailing noise",
-            zh="用 faster-whisper 后处理生成的 WAV，裁掉开头杂音/结尾噪音",
+            en="Post-process with faster-whisper (default OFF - Qwen output is already clean; enables slower turns)",
+            zh="用 faster-whisper 后处理（默认关闭 - Qwen 输出已很干净；开启会让响应变慢）",
         ),
         "trim_model": Description(
             en="faster-whisper model size used for trimming (e.g. 'small')",

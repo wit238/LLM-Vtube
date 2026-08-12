@@ -230,7 +230,7 @@ class TTSFactory:
                 instructions=kwargs.get("instructions", ""),
                 optimize_instructions=kwargs.get("optimize_instructions", True),
                 timeout=kwargs.get("timeout", 120.0),
-                trim_audio=kwargs.get("trim_audio", True),
+                trim_audio=kwargs.get("trim_audio", False),
                 trim_model=kwargs.get("trim_model", "small"),
                 trim_device=kwargs.get("trim_device", "cpu"),
                 trim_compute_type=kwargs.get("trim_compute_type", "int8"),
