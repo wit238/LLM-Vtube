@@ -23,6 +23,8 @@ _DEFAULT_VOICE = "Cherry"
 _DEFAULT_MAX_CHARS = 1200
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?;:。！？；：…\n])\s+")
+# '${VAR}' left unresolved in conf.yaml means "no key" -> fall back to env.
+_PLACEHOLDER = re.compile(r"^\$\{\w+\}$")
 
 
 class TTSEngine(TTSInterface):
@@ -50,6 +52,8 @@ class TTSEngine(TTSInterface):
         fallback_rate: str = "-14%",
     ) -> None:
         self.api_key = api_key or os.getenv("DASHSCOPE_API_KEY", "")
+        if _PLACEHOLDER.match(self.api_key):
+            self.api_key = os.getenv("DASHSCOPE_API_KEY", "")
         self.model = model
         self.voice = voice
         self.base_url = base_url
@@ -140,6 +144,9 @@ class TTSEngine(TTSInterface):
                 self._concat_wavs(part_paths, out_file)
                 for p in part_paths:
                     Path(p).unlink(missing_ok=True)
+            # DashScope WAVs sometimes carry a broken header (nframes/block_align);
+            # rewrite it so browsers/players get correct duration.
+            self._normalize_wav(out_file)
             logger.info(
                 f"qwen_tts: got WAV in {time.time() - t0:.1f}s "
                 f"({len(chunks)} chunk(s)) -> {out_file}"
@@ -220,6 +227,18 @@ class TTSEngine(TTSInterface):
             )
             part_paths.append(part)
         return part_paths
+
+    def _normalize_wav(self, out_file: str) -> None:
+        """Rewrite the WAV with a correct header (16-bit PCM mono)."""
+        try:
+            import soundfile as sf
+
+            data, sr = sf.read(out_file, dtype="float32", always_2d=True)
+            if data.shape[1] > 1:
+                data = data.mean(axis=1, keepdims=True)
+            sf.write(out_file, data[:, 0], sr, subtype="PCM_16")
+        except Exception as e:
+            logger.warning(f"qwen_tts: WAV normalize failed ({e}) - keeping as-is")
 
     def _concat_wavs(self, part_paths: list[str], out_file: str) -> None:
         """Concatenate WAV parts with pydub (pure-python for WAV, no ffmpeg)."""
