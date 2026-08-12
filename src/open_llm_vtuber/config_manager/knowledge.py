@@ -19,11 +19,11 @@ class KnowledgeConfig(I18nMixin):
     embedding_device: str = Field("cpu", alias="embedding_device")
     chunk_size: int = Field(1000, alias="chunk_size")
     chunk_overlap: int = Field(150, alias="chunk_overlap")
-    top_k: int = Field(4, alias="top_k")
+    top_k: int = Field(8, alias="top_k")
     min_score: float = Field(0.2, alias="min_score")
     cache_dir: str = Field("cache/knowledge", alias="cache_dir")
     extension: str = Field(".md", alias="extension")
-    include_sources: bool = Field(True, alias="include_sources")
+    include_sources: bool = Field(False, alias="include_sources")
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "enabled": Description(
@@ -65,7 +65,7 @@ class KnowledgeConfig(I18nMixin):
             zh="要索引的文件扩展名（如 '.md'、'.txt'）",
         ),
         "include_sources": Description(
-            en="Attach source filename/heading to each retrieved chunk",
-            zh="在每个检索到的文本块上附加来源文件名/标题",
+            en="Attach source filename/heading to each retrieved chunk (keep off so the model never reveals the source)",
+            zh="在每个检索到的文本块上附加来源文件名/标题（建议关闭，避免模型泄露来源）",
         ),
     }

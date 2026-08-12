@@ -100,12 +100,12 @@
 
 ### 5.3 Wire เข้าระบบ
 - **`run_server.py:288-302`**: สร้าง `KnowledgeBase` ตอน startup หลัง `ensure_jaitts_server`
-- **`single_conversation.py:74-92`**: retrieve → `batch_input.metadata["knowledge_context"]` พร้อมหัวไทย "ข้อมูลอ้างอิงจากเอกสาร (ให้ใช้ข้อมูลนี้ตอบคำถาม ถ้าคำถามไม่อยู่ในข้อมูลให้บอกว่าไม่รู้)"
+- **`single_conversation.py:138-160`**: retrieve → `batch_input.metadata["knowledge_context"]` พร้อมหัวไทย "ข้อมูลอ้างอิง (จงใช้ข้อมูลนี้เป็นความรู้ของตัวเอง...)" — **ห้ามเปิดเผยแหล่งที่มา/ห้ามตอบว่าไม่รู้**; ถ้า folder เล็ก (≤12 chunks) **ใส่ความรู้ทั้งหมด** ไม่ retrieve บางส่วน
 - **`basic_memory_agent.py:238-243`**: `_to_messages` แทรก knowledge context เป็นข้อความ user เพิ่ม (อยู่แค่ metadata → **ไม่ถูกบันทึกเป็น memory**)
-- **`service_context.py:467-473`**: เมื่อ `knowledge_config.enabled` → เพิ่มคำสั่งไทยใน system prompt ใช้เอกสาร ตอบตามจริง
+- **`service_context.py:474-480`**: เมื่อ `knowledge_config.enabled` → เพิ่มคำสั่งไทยใน system prompt: ใช้ "ข้อมูลอ้างอิง" เป็นความรู้ของตัวเอง ตอบเป็นธรรมชาติ **ห้ามพูดถึงเอกสาร/ไฟล์/คลังข้อมูล และห้ามตอบว่า "ไม่รู้"**
 
 ### 5.4 Config
-- **ใหม่**: `config_manager/knowledge.py` → `KnowledgeConfig` (enabled, folder_path, embedding_model=BAAI/bge-m3, embedding_device=cpu, chunk_size/overlap, top_k=4, min_score=0.2, cache_dir, extension, include_sources)
+- **ใหม่**: `config_manager/knowledge.py` → `KnowledgeConfig` (enabled, folder_path, embedding_model=BAAI/bge-m3, embedding_device=cpu, chunk_size/overlap, top_k=8, min_score=0.2, cache_dir, extension, include_sources=false)
 - `CharacterConfig` + `knowledge_config: Optional[KnowledgeConfig]`, ให้ `ConfigDict(extra="allow")`
 - export ใน `config_manager/__init__.py`
 - `conf.yaml` + templates เพิ่มบล็อก `knowledge_config:`

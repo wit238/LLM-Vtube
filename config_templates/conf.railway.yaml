@@ -1,4 +1,4 @@
-# conf.railway.yaml - configuration template for Railway deployment.
+﻿# conf.railway.yaml - configuration template for Railway deployment.
 # Auto-selected by scripts/start-app.sh when a Railway env var is present
 # (RAILWAY_ENVIRONMENT / RAILWAY_PROJECT_ID).
 #
@@ -62,11 +62,11 @@ character_config:
     embedding_device: 'cpu' # 'cpu' recommended so it doesn't fight the JaiTTS CUDA pipeline
     chunk_size: 1000 # Target characters per chunk
     chunk_overlap: 150 # Characters of overlap between consecutive chunks
-    top_k: 4 # Number of most relevant chunks injected into the LLM context
+    top_k: 8 # Number of most relevant chunks injected into the LLM context
     min_score: 0.2 # Minimum cosine similarity for a chunk to be retrieved (0-1)
     cache_dir: 'cache/knowledge' # Persistent chunk+embedding cache
     extension: '.md' # File extension to index
-    include_sources: true # Attach source filename/heading to each retrieved chunk
+    include_sources: false # Keep off so the model never reveals the source file/heading
 
   # ============== Prompts ==============
 

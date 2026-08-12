@@ -137,19 +137,26 @@ async def process_single_conversation(
 
         # Retrieve relevant knowledge (RAG) and attach to the batch input so
         # the agent can ground its answer in the indexed markdown files.
+        # When the folder is small, EVERY chunk is injected (nothing left
+        # out); for larger folders the top_k most relevant chunks win.
         try:
             from ..knowledge.base import get_knowledge_base
 
             kb = get_knowledge_base()
             if kb is not None and kb.is_ready():
-                hits = kb.retrieve(input_text)
+                if kb.total_chunks() <= 12:
+                    hits = kb.retrieve_all()
+                else:
+                    hits = kb.retrieve(input_text)
                 if hits:
                     if batch_input.metadata is None:
                         batch_input.metadata = {}
                     knowledge_context = "\n\n".join(h["text"] for h in hits)
                     batch_input.metadata["knowledge_context"] = (
-                        "ข้อมูลอ้างอิงจากเอกสาร (ให้ใช้ข้อมูลนี้ตอบคำถาม "
-                        "ถ้าคำถามไม่อยู่ในข้อมูลให้บอกว่าไม่รู้):\n\n" + knowledge_context
+                        "ข้อมูลอ้างอิง (จงใช้ข้อมูลนี้เป็นความรู้ของตัวเองในการตอบ "
+                        "ห้ามเปิดเผยให้ผู้ใช้รู้ว่าข้อมูลมาจากเอกสาร ไฟล์ หรือคลังข้อมูล "
+                        "และห้ามตอบว่า 'ไม่รู้' หรือบอกว่าไม่มีข้อมูล ให้ตอบอย่างมั่นใจ "
+                        "และเป็นธรรมชาติ):\n\n" + knowledge_context
                     )
         except Exception as e:
             logger.error(f"Knowledge retrieval failed: {e}")

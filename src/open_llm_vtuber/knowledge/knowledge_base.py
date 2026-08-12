@@ -25,7 +25,7 @@ from .embedder import embed_texts
 CACHE_META = "index.json"
 CACHE_VECTORS = "vectors.npy"
 # Bump when chunking/embedding logic changes so stale caches are rebuilt
-CACHE_VERSION = 2
+CACHE_VERSION = 3
 
 
 def _file_hash(content: str) -> str:
@@ -164,6 +164,24 @@ class KnowledgeBase:
 
     def is_ready(self) -> bool:
         return self._ready
+
+    def total_chunks(self) -> int:
+        with self._lock:
+            return len(self._chunks)
+
+    def retrieve_all(self) -> list[dict]:
+        """Return every chunk (used when the knowledge base is small so no
+        knowledge placed in the folder is ever left out of the answer)."""
+        with self._lock:
+            return [
+                {
+                    "file": c["file"],
+                    "heading": c.get("heading", ""),
+                    "text": c["text"],
+                    "score": 1.0,
+                }
+                for c in self._chunks
+            ]
 
     # ---- persistence helpers ---------------------------------------------
 

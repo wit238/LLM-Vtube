@@ -46,11 +46,11 @@ character_config:
     embedding_device: 'cpu' # 建议 'cpu'，避免与 JaiTTS 的 CUDA 管线争抢
     chunk_size: 1000 # 每个文本块的预期字符数
     chunk_overlap: 150 # 相邻文本块之间的重叠字符数
-    top_k: 4 # 注入 LLM 上下文的最相关文本块数量
+    top_k: 8 # 注入 LLM 上下文的最相关文本块数量
     min_score: 0.2 # 检索文本块的最低余弦相似度（0-1）
     cache_dir: 'cache/knowledge' # 持久化文本块与嵌入缓存的目录
     extension: '.md' # 要索引的文件扩展名
-    include_sources: true # 在每个检索到的文本块上附加来源文件名/标题
+    include_sources: false # 建议关闭，避免模型泄露来源文件名/标题
 
   # ============== 提示词 ==============
 
