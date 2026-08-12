@@ -26,6 +26,7 @@ class TTSEngine(TTSInterface):
         ref_text: str = "",
         speed: float = 1.0,
         seed: int = -1,
+        nfe_step: int = 24,
         timeout: float = 300.0,
         trim_audio: bool = True,
         trim_model: str = "small",
@@ -45,6 +46,7 @@ class TTSEngine(TTSInterface):
         self.ref_text = ref_text
         self.speed = float(speed)
         self.seed = int(seed)
+        self.nfe_step = int(nfe_step)
         self.timeout = float(timeout)
         self.trim_audio = bool(trim_audio)
         self.trim_model = trim_model
@@ -92,6 +94,7 @@ class TTSEngine(TTSInterface):
             "ref_text": self.ref_text,
             "speed": str(self.speed),
             "seed": str(self.seed),
+            "nfe_step": str(self.nfe_step),
         }
         files = None
         if self.ref_audio_path:

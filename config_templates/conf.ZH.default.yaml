@@ -301,6 +301,7 @@ character_config:
       ref_text: '参考音频的文字稿'
       speed: 1.0 # 语速倍数
       seed: -1 # 固定种子即可复现；-1 为随机
+      nfe_step: 24 # 流匹配 ODE 步数：24 = 快速且质量无损；16 = 约快 2.4 倍（开头可能有轻微杂音）
       timeout: 300.0 # 单次合成的 HTTP 超时（秒）
       auto_start: true # 随 run_server 自动启动 JaiTTS 服务器
       server_dir: '' # 服务器目录（server_local.py + .venv）。留空则自动从 ref_audio_path 所在目录推导

@@ -305,6 +305,7 @@ character_config:
       ref_text: 'transcript of the reference audio'
       speed: 1.0 # Speech speed multiplier
       seed: -1 # Fixed seed = reproducible output; -1 = random
+      nfe_step: 24 # Flow-matching ODE steps: 24 = fast with no quality loss; 16 = ~2.4x faster (slight babble possible)
       timeout: 300.0 # HTTP timeout in seconds for one synthesis call
       auto_start: true # Start the JaiTTS server automatically together with run_server
       server_dir: '' # Server folder (server_local.py + .venv). Empty = auto-detect next to ref_audio_path

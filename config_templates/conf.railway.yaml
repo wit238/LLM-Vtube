@@ -380,6 +380,7 @@ character_config:
       ref_text: 'แต่ว่าขอบคุณนะ วันนี้จะเล่นอะไรดี มาเล่นเกมกันเถอะ มีลิชนะขาดอยู่แล้ว เอ๊ะ แพ้แล้ว ไม่จริง แบบนี้มันโกงกันนี่ ขออีกตา ตานี้สุดท้ายจริงๆ นะ อะฮ่าฮ่า เย้'
       speed: 1.0 # Speech speed multiplier
       seed: -1 # Fixed seed = reproducible output; -1 = random
+      nfe_step: 24 # Flow-matching ODE steps: 24 = fast with no quality loss; 16 = ~2.4x faster (slight babble possible)
       timeout: 300.0 # HTTP timeout in seconds for one synthesis call
       auto_start: false # Railway has no local JaiTTS server - fallback edge_tts is used
       server_dir: '' # Only used with auto_start: true (local jaitts_modal venv)

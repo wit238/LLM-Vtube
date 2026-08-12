@@ -224,6 +224,7 @@ class TTSFactory:
                 ref_text=kwargs.get("ref_text", ""),
                 speed=kwargs.get("speed", 1.0),
                 seed=kwargs.get("seed", -1),
+                nfe_step=kwargs.get("nfe_step", 24),
                 timeout=kwargs.get("timeout", 300.0),
                 trim_audio=kwargs.get("trim_audio", True),
                 trim_model=kwargs.get("trim_model", "small"),

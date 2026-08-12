@@ -183,3 +183,18 @@
 - ASR ใช้ Typhoon realtime บน cuda, VAD ปิด
 - คำถามที่ตรง FAQ จะถูกตอบจาก FAQ script ก่อนถึง RAG — ถ้าอยากให้เอกสารชนะ FAQ ต้องปรับลำดับการเช็ค
 - รายละเอียดแยกแต่ละระบบอยู่ใน `conf.yaml` (comment) และคลาส config ใน `config_manager/`
+
+---
+
+## ช่วงที่ 8: เร่งความเร็ว JaiTTS (nfe_step) + JaiTTS เป็น local เต็มรูปแบบ
+
+### 8.1 JaiTTS เป็น local (ไม่ใช้ Modal)
+- `conf.yaml`: `api_url: 'http://127.0.0.1:8021/synthesize'`, `auto_start: true`, `server_dir: C:\Users\jirathx\Documents\Default Project\jaitts_modal`
+- `run_server.py ensure_jaitts_server` spawn `server_local.py` (CUDA venv ของ jaitts_modal) → health check → พร้อม ~70s; ปิด server → ปิดตาม
+- Railway เข้า localhost ไม่ได้ → edge_tts fallback อัตโนมัติ (แก้ comment ใน railway template)
+
+### 8.2 nfe_step (flow-matching ODE steps) — ตัวหลักของการเร่ง
+- Benchmark จริงบน RTX 2050 (เสียง 4.6s): `32 → 9.4s`, `24 → 6.2s` (คุณภาพเท่าเดิม), `16 → 4.0s` (~2.4x, มี babble หัวเสียงเป็นครั้งคราว)
+- **Default เปลี่ยน 32 → 24** ใน `server_local.py` + `run_local.py` (constant `NFE_STEP`)
+- `/synthesize` รับ form field `nfe_step` เพิ่ม — client `jaitts_tts.py` ส่งค่าได้จาก config
+- Config ใหม่ `nfe_step: 24` ใน `JaiTTSTTSConfig` + conf.yaml + templates
