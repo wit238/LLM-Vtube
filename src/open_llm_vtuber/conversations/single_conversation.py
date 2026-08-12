@@ -120,7 +120,7 @@ async def process_single_conversation(
                     name=context.character_config.character_name,
                     avatar=context.character_config.avatar,
                 )
-                logger.info(f"AI response: {full_response}")
+                logger.info(f"FAQ Response: {full_response}")
             return full_response
 
         # Send initial signals (conversation-chain-start + "กำลังคิด..." subtitle)
@@ -254,7 +254,7 @@ async def process_single_conversation(
                 name=context.character_config.character_name,
                 avatar=context.character_config.avatar,
             )
-            logger.info(f"AI response: {full_response}")
+            logger.info(f"AI Response: {full_response}")
 
         return full_response  # Return accumulated full_response
 

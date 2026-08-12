@@ -560,6 +560,12 @@ class WebSocketHandler:
                     }
                 )
             )
+        # New chat = fresh session: re-enable the FAQ handler so scripted
+        # answers work again (it may have been toggled off mid-session).
+        context.character_config.faq_enabled = True
+        await websocket.send_text(
+            json.dumps({"type": "faq-config", "enabled": True})
+        )
 
     async def _handle_delete_history(
         self, websocket: WebSocket, client_uid: str, data: dict
