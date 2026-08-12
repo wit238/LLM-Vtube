@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="th">
   <head>
     <meta charset="UTF-8" />
@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="./assets/main-CKgUHFa9.js?v=v33_faq_toggle"></script>
-    <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css?v=v33_faq_toggle">
+    <script type="module" crossorigin src="./assets/main-CKgUHFa9.js?v=v34_one_advanced"></script>
+    <link rel="stylesheet" crossorigin href="./assets/main-QEkl09-0.css?v=v34_one_advanced">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       .adv-field { display: flex; flex-direction: column; gap: 10px; padding: 8px 4px; }
@@ -134,15 +134,6 @@
           });
         }
 
-        function isSettingsTabsList(listEl) {
-          var triggers = listEl.querySelectorAll('[data-part="trigger"]');
-          for (var i = 0; i < triggers.length; i++) {
-            var t = (triggers[i].textContent || '').toLowerCase();
-            if (t.indexOf('live2d') >= 0 || t.indexOf('asr') >= 0 || t.indexOf('tts') >= 0) return true;
-          }
-          return false;
-        }
-
         function buildToggle() {
           var state = localStorage.getItem(ADV_KEY) === 'on';
 
@@ -165,7 +156,6 @@
 
           var input = document.createElement('input');
           input.type = 'checkbox';
-          input.id = 'tabs::r36:';
           input.className = 'adv-input';
           input.checked = state;
 
@@ -190,91 +180,32 @@
           return field;
         }
 
-        function injectAdvancedTab(listEl) {
-          if (listEl.__advInjected) return;
-          listEl.__advInjected = true;
-
-          var root = listEl.parentElement;
-          if (!root || !isSettingsTabsList(listEl)) return;
-
-          var defaultTrigger = listEl.querySelector('[data-part="trigger"]');
-          var oldContent = root.querySelector('[data-part="content"]');
-          if (!defaultTrigger || !oldContent) return;
-
-          var advancedTrigger = defaultTrigger.cloneNode(true);
-          advancedTrigger.removeAttribute('id');
-          advancedTrigger.removeAttribute('data-selected');
-          advancedTrigger.removeAttribute('aria-selected');
-          advancedTrigger.setAttribute('data-value', 'advanced');
-          advancedTrigger.textContent = 'ขั้นสูง';
-
-          var content = oldContent.cloneNode(false);
-          for (var i = oldContent.attributes.length - 1; i >= 0; i--) {
-            var attrName = oldContent.attributes[i].name;
-            if (attrName === 'id' || attrName === 'data-value') continue;
-            content.setAttribute(attrName, oldContent.attributes[i].value);
+        // The bundle already ships a real "ขั้นสูง" (advanced) tab with the
+        // FAQ Handler toggle. We only attach the Vision Tools toggle into
+        // that existing tab's content - no duplicate tab is created.
+        function injectVisionToggle() {
+          var roots = document.querySelectorAll('[data-scope="tabs"][data-part="root"]');
+          for (var i = 0; i < roots.length; i++) {
+            var root = roots[i];
+            var content = root.querySelector('[data-part="content"][data-value="advanced"]');
+            if (!content) continue;
+            if (content.__advInjected) continue;
+            if (!root.querySelector('[data-part="trigger"][data-value="advanced"]')) continue;
+            content.__advInjected = true;
+            content.appendChild(buildToggle());
           }
-          content.removeAttribute('hidden');
-          content.removeAttribute('data-selected');
-          content.setAttribute('data-value', 'advanced');
-          content.style.display = 'none';
-          content.appendChild(buildToggle());
-
-          listEl.appendChild(advancedTrigger);
-          oldContent.after(content);
-
-          function showAdvanced() {
-            root.querySelectorAll('[data-part="content"]').forEach(function (c) {
-              c.style.display = 'none';
-            });
-            content.style.display = 'block';
-            content.setAttribute('data-selected', '');
-            content.removeAttribute('hidden');
-            listEl.querySelectorAll('[data-part="trigger"]').forEach(function (t) {
-              var sel = t.getAttribute('data-value') === 'advanced';
-              if (sel) {
-                t.setAttribute('aria-selected', 'true');
-                t.setAttribute('data-selected', '');
-              } else {
-                t.removeAttribute('aria-selected');
-                t.removeAttribute('data-selected');
-              }
-            });
-          }
-
-          advancedTrigger.addEventListener('click', function (e) {
-            e.stopPropagation();
-            showAdvanced();
-          });
-
-          listEl.addEventListener('click', function (e) {
-            var trig = e.target && e.target.closest ? e.target.closest('[data-part="trigger"]') : null;
-            if (trig && trig !== advancedTrigger) {
-              content.setAttribute('hidden', '');
-              content.removeAttribute('data-selected');
-              root.querySelectorAll('[data-part="content"]').forEach(function (c) {
-                c.style.display = '';
-              });
-            }
-          });
         }
 
-        function tryInject() {
-          if (!document.body) return;
-          var lists = document.querySelectorAll('div[data-scope="tabs"][data-part="list"], [data-scope="tabs"][data-part="list"]');
-          for (var i = 0; i < lists.length; i++) injectAdvancedTab(lists[i]);
-        }
-
-        var observer = new MutationObserver(function () { tryInject(); applyVision(); });
+        var observer = new MutationObserver(function () { injectVisionToggle(); applyVision(); });
         document.addEventListener('DOMContentLoaded', function () {
-          tryInject();
+          injectVisionToggle();
           applyVision();
           observer.observe(document.body, { childList: true, subtree: true });
         });
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', tryInject);
+          document.addEventListener('DOMContentLoaded', injectVisionToggle);
         } else {
-          tryInject();
+          injectVisionToggle();
           applyVision();
           observer.observe(document.body, { childList: true, subtree: true });
         }
