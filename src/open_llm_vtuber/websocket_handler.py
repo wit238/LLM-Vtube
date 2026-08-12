@@ -43,7 +43,12 @@ class MessageType(Enum):
         "delete-history",
     ]
     CONVERSATION = ["mic-audio-end", "text-input", "ai-speak-signal"]
-    CONFIG = ["fetch-configs", "switch-config"]
+    CONFIG = [
+        "fetch-configs",
+        "switch-config",
+        "faq-config",
+        "fetch-faq-config",
+    ]
     CONTROL = ["interrupt-signal", "audio-play-start"]
     DATA = ["mic-audio-data"]
 
@@ -94,6 +99,8 @@ class WebSocketHandler:
             "ai-speak-signal": self._handle_conversation_trigger,
             "fetch-configs": self._handle_fetch_configs,
             "switch-config": self._handle_config_switch,
+            "faq-config": self._handle_faq_config,
+            "fetch-faq-config": self._handle_fetch_faq_config,
             "fetch-backgrounds": self._handle_fetch_backgrounds,
             "audio-play-start": self._handle_audio_play_start,
             "request-init-config": self._handle_init_config_request,
@@ -650,6 +657,33 @@ class WebSocketHandler:
         if config_file_name:
             context = self.client_contexts[client_uid]
             await context.handle_config_switch(websocket, config_file_name)
+
+    async def _handle_fetch_faq_config(
+        self, websocket: WebSocket, client_uid: str, data: WSMessage
+    ) -> None:
+        """Handle fetching the current FAQ handler state"""
+        context = self.client_contexts.get(client_uid) or self.default_context_cache
+        enabled = bool(getattr(context.character_config, "faq_enabled", False))
+        await websocket.send_text(
+            json.dumps({"type": "faq-config", "enabled": enabled})
+        )
+
+    async def _handle_faq_config(
+        self, websocket: WebSocket, client_uid: str, data: dict
+    ) -> None:
+        """Handle toggling the FAQ handler on/off at runtime"""
+        context = self.client_contexts.get(client_uid)
+        if not context:
+            return
+        enabled = bool(data.get("enabled", True))
+        context.character_config.faq_enabled = enabled
+        logger.info(
+            f"FAQ Handler {'enabled' if enabled else 'disabled'} "
+            f"for client {client_uid}"
+        )
+        await websocket.send_text(
+            json.dumps({"type": "faq-config", "enabled": enabled})
+        )
 
     async def _handle_fetch_backgrounds(
         self, websocket: WebSocket, client_uid: str, data: WSMessage
