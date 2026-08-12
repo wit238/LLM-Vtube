@@ -8,6 +8,8 @@ cartesia==2.0.17
     # via open-llm-vtuber (pyproject.toml)
 chardet==5.2.0
     # via open-llm-vtuber (pyproject.toml)
+dashscope==1.26.6
+    # via open-llm-vtuber (pyproject.toml)
 duckduckgo-mcp-server==0.1.1
     # via open-llm-vtuber (pyproject.toml)
 edge-tts==7.2.7
